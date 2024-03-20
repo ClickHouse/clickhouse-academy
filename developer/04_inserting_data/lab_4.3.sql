@@ -9,11 +9,15 @@ FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/operating_budget.cs
 SETTINGS format_csv_delimiter = '~';
 
 --Step 3:
-SELECT formatReadableQuantity(sum(approve_amount))
+SELECT formatReadableQuantity(sum(approved_amount))
 FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/operating_budget.csv')
 SETTINGS format_csv_delimiter = '~';
 
--- You get an exception telling you that trying to sum a String column is not allowed. Apparently, the approved_amount column is not entirely numeric data, and ClickHouse inferred that column as a String.
+/*
+ * You get an exception telling you that trying to sum a String column is not
+ * allowed. Apparently, the approved_amount column is not entirely numeric
+ * data, and ClickHouse inferred that column as a String.
+ */
 
 --Step 4:
 DESCRIBE s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/operating_budget.csv')
@@ -32,7 +36,7 @@ CREATE TABLE operating_budget (
     service LowCardinality(String),
     department LowCardinality(String),
     program LowCardinality(String),
-    program_code UInt32,
+    program_code LowCardinality(String),
     description String,
     item_category LowCardinality(String),
     approved_amount UInt32,
@@ -53,7 +57,7 @@ INSERT INTO operating_budget
         c2 AS service,
         c3 AS department,
         result[1] AS program,
-        toUInt32OrZero(splitByChar(')',result[2])[1]) AS program_code,
+        splitByChar(')',result[2])[1] AS program_code,
         c5 AS description,
         c6 AS item_category,
         toUInt32OrZero(c7) AS approved_amount,
@@ -92,4 +96,4 @@ WHERE fiscal_year = '2022';
 SELECT sum(actual_amount)
 FROM operating_budget
 WHERE fiscal_year = '2022'
-AND program_code = 31;
+AND program_code = '031';

@@ -1,3 +1,17 @@
+--Step 2:
+
+/*
+ * The query returns the last 20 queries executed ordered by time descending.
+ */
+
+--Step 3:
+
+/*
+ * The query is executed only on the node that is handling the request.
+ * As there are two nodes in the cluster, the query returns two different sets
+ * of results, one for each node.
+ */
+
 --Step 4:
 SELECT
     event_time,

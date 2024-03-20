@@ -70,7 +70,10 @@ SELECT
 FROM prices_by_year_dest
 WHERE toYear(date) = '2020';
 
--- The query only needs to read 886,642 rows, which is exactly how many properties were sold in the UK in 2020.
+/*
+ * The query only needs to read 886,642 rows, which is exactly how many
+ * properties were sold in the UK in 2020.
+ */
 
 --Step 11:
 SELECT

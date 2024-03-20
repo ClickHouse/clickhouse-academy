@@ -10,7 +10,7 @@ PRIMARY KEY id;
 
 --Step 4:
 INSERT INTO messages VALUES
-   (2, '', '', -1),
+   (2, '2024-07-04', 'Hi', -1),
    (2, '2024-07-05', 'Goodbye', 1);
 
 --Step 5:

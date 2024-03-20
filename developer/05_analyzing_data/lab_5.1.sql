@@ -61,6 +61,10 @@ SELECT
     avgIf(price, type = 'other')
 FROM uk_price_paid;
 
+SELECT type, avg(price) as avg_price
+FROM uk_price_paid
+GROUP BY type;
+
 --Step 9:
 SELECT
     formatReadableQuantity(sum(price))

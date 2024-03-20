@@ -8,6 +8,10 @@ CREATE TABLE rates_monthly (
 ENGINE = ReplacingMergeTree
 PRIMARY KEY month;
 
+--Step 3:
+SELECT *
+FROM rates_monthly;
+
 --Step 5:
 INSERT INTO rates_monthly VALUES
     ('2022-05-31', 3.2, 3.0, 1.1);
