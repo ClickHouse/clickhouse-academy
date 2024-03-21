@@ -42,23 +42,25 @@ SELECT
     min(min_price),
     max(max_price)
 FROM uk_prices_aggs_dest
+WHERE
+    month >= (toStartOfMonth(now()) - (INTERVAL 12 MONTH))
+    AND month < toStartOfMonth(now())
 GROUP BY month
-ORDER BY month DESC
-LIMIT 12;
+ORDER BY month DESC;
 
 --Step 5:
 SELECT
     month,
     avgMerge(avg_price)
 FROM uk_prices_aggs_dest
+WHERE
+    month >= (toStartOfMonth(now()) - (INTERVAL 2 YEAR))
+    AND month < toStartOfMonth(now())
 GROUP BY month
-ORDER BY month DESC
-LIMIT 24;
+ORDER BY month DESC;
 
 --Step 6:
 SELECT
-    month,
     countMerge(volume)
 FROM uk_prices_aggs_dest
-WHERE toYear(month) = '2020'
-GROUP BY month;
+WHERE toYear(month) = '2020';

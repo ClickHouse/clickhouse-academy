@@ -24,11 +24,20 @@ SELECT count()
 FROM crypto_prices
 WHERE volume >= 1_000_000;
 
+/*
+ * It read all of the rows because volume is not part of the primary key.
+ */
+
 --Step 6:
 SELECT
    avg(price)
 FROM crypto_prices
 WHERE crypto_name = 'Bitcoin';
+
+/*
+ * Only a single granule was processed. As crypto_name is a primary key,
+ * ClickHouse use it to optmize the query.
+ */
 
 --Step 7:
 SELECT

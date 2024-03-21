@@ -18,7 +18,7 @@ ALTER TABLE ttl_demo
 
 --Step 12:
 ALTER TABLE prices_1
-    MODIFY TTL date + INTERVAL 4 YEAR;
+    MODIFY TTL date + INTERVAL 5 YEAR;
 
 --Step 13:
 ALTER TABLE prices_1

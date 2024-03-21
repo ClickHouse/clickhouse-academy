@@ -19,6 +19,9 @@ SOURCE(
 LAYOUT(COMPLEX_KEY_HASHED())
 LIFETIME(2628000000);
 
+--Step 3:
+SELECT *
+FROM uk_mortgage_rates;
 
 --Step 4:
 WITH
@@ -42,7 +45,6 @@ SELECT
 FROM uk_price_paid
 JOIN uk_mortgage_rates
 ON month = toStartOfMonth(uk_mortgage_rates.date)
-WHERE month >= toDate('2000-01-01')
 GROUP BY month
 ORDER BY 2 DESC;
 
