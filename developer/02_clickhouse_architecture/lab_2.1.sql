@@ -1,3 +1,6 @@
+--Step 1:
+DESCRIBE s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/pypi/2023/pypi_0_7_34.snappy.parquet');
+
 --Step 2:
 SELECT *
 FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/pypi/2023/pypi_0_7_34.snappy.parquet')
@@ -80,6 +83,28 @@ ORDER BY c DESC;
  * help in skipping granules.
  */
 
+--Step 12:
+CREATE TABLE pypi2 (
+    TIMESTAMP DateTime,
+    COUNTRY_CODE String,
+    URL String,
+    PROJECT String
+)
+ENGINE = MergeTree
+PRIMARY KEY (TIMESTAMP, PROJECT);
+
+INSERT INTO pypi2
+    SELECT *
+    FROM pypi;
+
+SELECT
+    PROJECT,
+    count() AS c
+FROM pypi2
+WHERE PROJECT LIKE 'boto%'
+GROUP BY PROJECT
+ORDER BY c DESC;
+
 --Step 13:
 /*
  * None. Even though PROJECT was added to the primary key, it did not allow
@@ -87,6 +112,29 @@ ORDER BY c DESC;
  * cardinality that is making any subsequent columns in the primary key
  * difficult to be useful.
  */
+
+
+--Step 14:
+CREATE OR REPLACE TABLE pypi2 (
+    TIMESTAMP DateTime,
+    COUNTRY_CODE String,
+    URL String,
+    PROJECT String
+)
+ENGINE = MergeTree
+PRIMARY KEY (PROJECT, TIMESTAMP);
+
+INSERT INTO pypi2
+    SELECT *
+    FROM pypi;
+
+SELECT
+    PROJECT,
+    count() AS c
+FROM pypi2
+WHERE PROJECT LIKE 'boto%'
+GROUP BY PROJECT
+ORDER BY c DESC;
 
 --Step 15:
 /*

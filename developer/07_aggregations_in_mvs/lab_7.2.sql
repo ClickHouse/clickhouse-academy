@@ -1,3 +1,32 @@
+--Step 1:
+WITH
+    toStartOfMonth(date) AS month
+SELECT
+    month,
+    min(price) AS min_price,
+    max(price) AS max_price
+FROM uk_price_paid
+GROUP BY month
+ORDER BY month DESC;
+
+WITH
+    toStartOfMonth(date) AS month
+SELECT
+    month,
+    avg(price)
+FROM uk_price_paid
+GROUP BY month
+ORDER BY month DESC;
+
+WITH
+    toStartOfMonth(date) AS month
+SELECT
+    month,
+    count()
+FROM uk_price_paid
+GROUP BY month
+ORDER BY month DESC;
+
 --Step 2:
 CREATE TABLE uk_prices_aggs_dest (
     month Date,
@@ -36,6 +65,9 @@ INSERT INTO uk_prices_aggs_dest
     WHERE date < toDate('2024-01-01')
     GROUP BY month;
 
+--Step 3:
+SELECT * FROM uk_prices_aggs_dest;
+
 --Step 4:
 SELECT
     month,
@@ -64,3 +96,18 @@ SELECT
     countMerge(volume)
 FROM uk_prices_aggs_dest
 WHERE toYear(month) = '2020';
+
+--Step 7:
+INSERT INTO uk_price_paid (date, price, town) VALUES
+    ('2024-08-01', 10000, 'Little Whinging'),
+    ('2024-08-01', 1, 'Little Whinging');
+
+--Step 8:
+SELECT
+    month,
+    countMerge(volume),
+    min(min_price),
+    max(max_price)
+FROM uk_prices_aggs_dest
+WHERE toYYYYMM(month) = '202408'
+GROUP BY month;
