@@ -20,6 +20,19 @@ WHERE date >= toDate('2022-01-01') AND date <= toDate('2022-12-31');
 SELECT count()
 FROM london_properties_view;
 
+--Step 4:
+SELECT count()
+FROM uk_price_paid
+WHERE town = 'LONDON';
+
+--Step 6:
+EXPLAIN SELECT count()
+FROM london_properties_view;
+
+EXPLAIN SELECT count()
+FROM uk_price_paid
+WHERE town = 'LONDON';
+
 --Step 7:
 CREATE VIEW properties_by_town_view
 AS

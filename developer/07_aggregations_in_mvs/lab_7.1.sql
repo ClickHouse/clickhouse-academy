@@ -1,3 +1,12 @@
+--Step 1:
+SELECT
+    town,
+    sum(price) AS sum_price,
+    formatReadableQuantity(sum_price)
+FROM uk_price_paid
+GROUP BY town
+ORDER BY sum_price DESC;
+
 --Step 2:
 CREATE TABLE prices_sum_dest
 (
@@ -28,6 +37,24 @@ SELECT count()
 FROM prices_sum_dest;
 
 --Step 4:
+SELECT
+    town,
+    sum(price) AS sum_price,
+    formatReadableQuantity(sum_price)
+FROM uk_price_paid
+WHERE town = 'LONDON'
+GROUP BY town;
+
+SELECT
+    town,
+    sum_price AS sum,
+    formatReadableQuantity(sum)
+FROM prices_sum_dest
+WHERE town = 'LONDON';
+
+INSERT INTO uk_price_paid (price, date, town, street)
+VALUES
+    (4294967295, toDate('2024-01-01'), 'LONDON', 'My Street1');
 
 /*
  * The issue is that prices_sum_dest might have multiple rows with the same

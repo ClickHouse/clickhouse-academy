@@ -30,6 +30,15 @@ SELECT
 FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/operating_budget.csv')
 SETTINGS format_csv_delimiter = '~';
 
+--Step 6:
+SELECT
+    formatReadableQuantity(sum(approved_amount)),
+    formatReadableQuantity(sum(recommended_amount))
+FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/operating_budget.csv')
+SETTINGS
+format_csv_delimiter='~',
+schema_inference_hints='approved_amount UInt32, recommended_amount UInt32';
+
 --Step 7:
 CREATE TABLE operating_budget (
     fiscal_year LowCardinality(String),

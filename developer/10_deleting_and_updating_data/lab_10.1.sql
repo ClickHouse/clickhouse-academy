@@ -8,13 +8,34 @@ CREATE TABLE rates_monthly (
 ENGINE = ReplacingMergeTree
 PRIMARY KEY month;
 
+--Step 2:
+INSERT INTO rates_monthly
+    SELECT
+        toDate(date) AS month,
+        variable,
+        fixed,
+        bank
+    FROM s3(
+        'https://learnclickhouse.s3.us-east-2.amazonaws.com/datasets/mortgage_rates.csv',
+        'CSVWithNames');
+
 --Step 3:
 SELECT *
 FROM rates_monthly;
 
+--Step 4:
+SELECT *
+FROM rates_monthly
+WHERE month = '2022-05-31';
+
 --Step 5:
 INSERT INTO rates_monthly VALUES
     ('2022-05-31', 3.2, 3.0, 1.1);
+
+--Step 6:
+SELECT *
+FROM rates_monthly
+WHERE month = '2022-05-31';
 
 --Step 7:
 SELECT *
@@ -37,6 +58,18 @@ INSERT INTO rates_monthly2
     SELECT
         month, variable, fixed, bank, 1
     FROM rates_monthly;
+
+--Step 10:
+INSERT INTO rates_monthly2 VALUES
+    ('2022-04-30', 3.1, 2.6, 1.1, 10);
+
+INSERT INTO rates_monthly2 VALUES
+    ('2022-04-30', 2.9, 2.4, 0.9, 5);
+
+--Step 11:
+SELECT *
+FROM rates_monthly2 FINAL
+WHERE month = '2022-04-30';
 
 --Step 12:
 OPTIMIZE TABLE rates_monthly2 FINAL;

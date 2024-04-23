@@ -1,3 +1,6 @@
+--Step 1:
+DESCRIBE s3('https://learnclickhouse.s3.us-east-2.amazonaws.com/datasets/crypto_prices.parquet');
+
 --Step 2:
 CREATE TABLE crypto_prices (
    trade_date Date,
