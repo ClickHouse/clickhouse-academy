@@ -37,13 +37,6 @@ LIMIT 10;
 
 --Step 7:
 SELECT
-    argMax(addr1, price),
-    argMax(addr2, price),
-    argMax(street, price),
-    argMax(town, price)
-FROM uk_price_paid;
-
-SELECT
     addr1,
     addr2,
     street,
