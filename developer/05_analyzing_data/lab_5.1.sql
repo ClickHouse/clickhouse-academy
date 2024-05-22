@@ -5,11 +5,13 @@ WHERE price >= 100_000_000
 ORDER BY price desc;
 
 --Step 2:
+--How many properties were sold for over 1 million pounds in 2022?
 SELECT count()
 FROM uk_price_paid
-WHERE price > 1_000_000;
+WHERE price > 1_000_000 and toYear(date) = 2022;
 
 --Step 3:
+--1172 Not 1173
 SELECT uniqExact(town)
 FROM uk_price_paid;
 
