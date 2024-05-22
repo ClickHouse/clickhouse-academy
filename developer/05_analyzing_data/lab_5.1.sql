@@ -7,9 +7,10 @@ ORDER BY price desc;
 --Step 2:
 SELECT count()
 FROM uk_price_paid
-WHERE price > 1_000_000;
+WHERE price > 1_000_000 and toYear(date) = 2022;
 
 --Step 3:
+--The answer is 1172, not 1173
 SELECT uniqExact(town)
 FROM uk_price_paid;
 
