@@ -7,7 +7,9 @@ ORDER BY price desc;
 --Step 2:
 SELECT count()
 FROM uk_price_paid
-WHERE price > 1_000_000;
+WHERE
+    price > 1_000_000
+    AND date >= toDate('2022-01-01') AND date <= toDate('2022-12-31');
 
 --Step 3:
 SELECT uniqExact(town)
