@@ -17,7 +17,8 @@ SOURCE(
   )
 )
 LAYOUT(COMPLEX_KEY_HASHED())
-LIFETIME(2628000000);
+LIFETIME(2628000000)
+SETTINGS(date_time_input_format = 'best_effort'); --This setting is only needed for non-Cloud users
 
 --Step 3:
 SELECT *
