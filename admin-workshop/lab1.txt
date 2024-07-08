@@ -1,0 +1,38 @@
+-- Step 3
+curl https://clickhouse.com/ | sh
+
+-- Step 4
+./clickhouse server --version
+
+-- Step 5
+./clickhouse server
+
+-- Step 8
+./clickhouse client
+
+-- Step 9
+SHOW databases;
+
+-- Step 10
+SHOW tables IN system;
+
+-- Step 11
+SELECT * FROM system.zeros LIMIT 100;
+
+-- Step 15
+<clickhouse>
+   <profiles>
+      <default>
+         <max_rows_to_read>5</max_rows_to_read>
+      </default>
+   </profiles>
+</clickhouse>
+
+-- Step 16
+SELECT *
+FROM system.settings
+WHERE name = 'max_rows_to_read'
+FORMAT Vertical;
+
+-- Step 17
+SELECT * FROM system.zeros LIMIT 10;

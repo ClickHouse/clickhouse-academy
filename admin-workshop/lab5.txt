@@ -1,0 +1,182 @@
+-- Step 3
+chmod 400 ~/.ssh/admin_workshop.pem
+
+-- Step 4
+export HOST1=
+export HOST2=
+export HOST3=
+
+-- Step 5
+ssh -i ~/.ssh/admin_workshop.pem ubuntu@$HOST1
+ssh -i ~/.ssh/admin_workshop.pem ubuntu@$HOST2
+ssh -i ~/.ssh/admin_workshop.pem ubuntu@$HOST3
+
+-- Step 6
+sudo apt-get update -y
+
+sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
+curl -fsSL 'https://packages.clickhouse.com/rpm/lts/repodata/repomd.xml.key' | sudo gpg --dearmor -o /usr/share/keyrings/clickhouse-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/clickhouse-keyring.gpg] https://packages.clickhouse.com/deb stable main" | sudo tee \
+    /etc/apt/sources.list.d/clickhouse.list
+sudo apt-get update
+
+sudo apt-get install -y clickhouse-server clickhouse-client
+
+-- Step 7
+sudo systemctl enable clickhouse-server
+
+-- Step 8
+sudo adduser ubuntu clickhouse
+sudo chmod -R 770 /etc/clickhouse-server/
+
+-- Step 10
+<clickhouse>
+	<listen_host>::</listen_host>
+</clickhouse>
+
+-- Step 12
+<clickhouse>
+    <remote_servers >
+        <my_cluster>
+            <shard>
+                <internal_replication>true</internal_replication>
+                <replica>
+                    <host>172.31.20.64</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>172.31.18.109</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>172.31.21.40</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+        </my_cluster>
+    </remote_servers>
+</clickhouse>
+
+-- Step 13
+<clickhouse>
+    <macros>
+        <shard>01</shard>
+        <replica>01</replica>
+    </macros>
+</clickhouse>
+
+-- Step 14
+<clickhouse>
+    <keeper_server>
+        <tcp_port>9181</tcp_port>
+        <server_id>1</server_id>
+        <log_storage_path>/var/lib/clickhouse/coordination/log</log_storage_path>
+        <snapshot_storage_path>/var/lib/clickhouse/coordination/snapshots</snapshot_storage_path>
+
+        <coordination_settings>
+            <operation_timeout_ms>10000</operation_timeout_ms>
+            <session_timeout_ms>30000</session_timeout_ms>
+            <raft_logs_level>debug</raft_logs_level>
+            <rotate_log_storage_interval>10000</rotate_log_storage_interval>
+        </coordination_settings>
+
+        <raft_configuration>
+            <server>
+                <id>1</id>
+                <hostname>172.31.20.64</hostname>
+                <port>9234</port>
+            </server>
+            <server>
+                <id>2</id>
+                <hostname>172.31.18.109</hostname>
+                <port>9234</port>
+            </server>
+            <server>
+                <id>3</id>
+                <hostname>172.31.21.40</hostname>
+                <port>9234</port>
+            </server>
+        </raft_configuration>
+    </keeper_server>
+    <zookeeper>
+        <node>
+            <host>172.31.20.64</host>
+            <port>9181</port>
+        </node>
+        <node>
+            <host>172.31.18.109</host>
+            <port>9181</port>
+        </node>
+        <node>
+            <host>172.31.21.40</host>
+            <port>9181</port>
+        </node>
+    </zookeeper>
+
+    <distributed_ddl>
+        <path>/clickhouse/my_cluster/task_queue/ddl</path>
+    </distributed_ddl>
+</clickhouse>
+
+-- Step 15
+SELECT *
+FROM system.clusters
+FORMAT Vertical;
+
+-- Step 16
+./clickhouse client --host $HOST1
+
+-- Step 17
+SELECT
+    cluster,
+    shard_num,
+    replica_num
+FROM system.clusters;
+
+-- Step 18
+CREATE DATABASE my_db ON CLUSTER my_cluster;
+
+CREATE TABLE my_db.my_table ON CLUSTER my_cluster
+(
+    `x` UInt32,
+    `y` String
+)
+ENGINE = ReplicatedMergeTree('/clickhouse/tables/{uuid}/{shard}', '{replica}')
+ORDER BY x;
+
+INSERT INTO my_db.my_table VALUES
+   (1, 'one'),
+   (2, 'two'),
+   (3, 'three');
+
+SELECT *
+FROM my_db.my_table;
+
+-- Step 19
+SELECT event_time, query
+FROM system.query_log
+ORDER BY event_time DESC
+LIMIT 20;
+
+-- Step 21
+SELECT
+    event_time,
+    query
+FROM clusterAllReplicas(my_cluster, system.query_log)
+ORDER BY event_time DESC
+LIMIT 20;
+
+-- Step 22
+SELECT
+    instance,
+    * EXCEPT instance APPLY formatReadableSize
+FROM (
+    SELECT
+        hostname() AS instance,
+        sum(primary_key_size),
+        sum(primary_key_bytes_in_memory),
+        sum(primary_key_bytes_in_memory_allocated)
+    FROM clusterAllReplicas(my_cluster, system.parts)
+    GROUP BY instance
+);
