@@ -1,22 +1,22 @@
 -- Step 1
 CREATE DICTIONARY post_types (
-    id UInt32,
+    id UInt8,
     name String
 )
 PRIMARY KEY id
-SOURCE(POSTGRESQL(
-    port 5432
+SOURCE(PostgreSQL(
     host '3.111.115.15'
-    user 'stack_readonly_user'
-    password 'clickhouse'
+    port 5432
     db 'stackexchange'
     table 'post_types'
+    user 'stack_readonly_user'
+    password 'clickhouse'
 ))
 LAYOUT(FLAT)
 LIFETIME(3600);
 
 -- Step 2
-SELECT * FROM post_types;
+SELECT * FROM post_types LIMIT 10;
 
 -- Step 3
 CREATE OR REPLACE TABLE posts (

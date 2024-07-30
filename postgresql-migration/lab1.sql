@@ -3,7 +3,7 @@ SELECT count()
 FROM postgresql('3.111.115.15', 'stackexchange', 'badges', 'stack_readonly_user', 'clickhouse');
 
 -- Step 6
-DESC postgresql('3.111.115.15', 'stackexchange', 'badges', 'stack_readonly_user', 'clickhouse');
+DESCRIBE TABLE postgresql('3.111.115.15', 'stackexchange', 'badges', 'stack_readonly_user', 'clickhouse');
 
 -- Step 7
 CREATE TABLE postgres_badges (
@@ -42,3 +42,13 @@ SELECT
     FROM postgresql('3.111.115.15', 'stackexchange', 'post_types', 'stack_readonly_user', 'clickhouse')
     ) AS post_types
 FORMAT Vertical;
+
+SELECT count() FROM postgresql('3.111.115.15', 'stackexchange', 'posts', 'stack_readonly_user', 'clickhouse');
+
+SELECT count() FROM postgresql('3.111.115.15', 'stackexchange', 'users', 'stack_readonly_user', 'clickhouse');
+
+SELECT count() FROM postgresql('3.111.115.15', 'stackexchange', 'votes', 'stack_readonly_user', 'clickhouse');
+
+SELECT count() FROM postgresql('3.111.115.15', 'stackexchange', 'post_types', 'stack_readonly_user', 'clickhouse');
+
+SELECT count() FROM postgresql('3.111.115.15', 'stackexchange', 'vote_types', 'stack_readonly_user', 'clickhouse');

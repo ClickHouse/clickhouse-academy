@@ -15,8 +15,6 @@ FROM postgres_badges FORMAT Vertical;
 -- The name column has the lowest cardinality, so it may as well be first, followed by user_id, then date (which is often at the end of a primary key)
 
 -- Step 6
-SELECT DISTINCT class FROM postgresql('3.111.115.15', 'stackexchange', 'badges', 'stack_readonly_user', 'clickhouse');
-
 CREATE TABLE badges (
     id UInt32,
     user_id Int32,

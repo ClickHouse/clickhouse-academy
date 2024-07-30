@@ -1,4 +1,4 @@
--- Step 1
+-- Step 3
 CREATE TABLE votes (
     id UInt32,
     post_id UInt32,
@@ -10,7 +10,7 @@ CREATE TABLE votes (
 ENGINE = MergeTree
 PRIMARY KEY (vote_type, post_id, creation_date);
 
--- Step 2
+-- Step 4
 INSERT INTO votes
 SELECT
     id, post_id, postgres_vote_types.name, user_id,
@@ -18,11 +18,11 @@ SELECT
 FROM
     postgresql('3.111.115.15', 'stackexchange', 'votes', 'stack_readonly_user', 'clickhouse') as postgres_votes
 JOIN
-  postgresql('3.111.115.15', 'stackexchange', 'vote_types', 'stack_readonly_user', 'clickhouse') as postgres_vote_types
+    postgresql('3.111.115.15', 'stackexchange', 'vote_types', 'stack_readonly_user', 'clickhouse') as postgres_vote_types
 ON
     postgres_votes.vote_type_id = postgres_vote_types.id;
 
--- Step 3
+-- Step 5
 SELECT * FROM votes LIMIT 1;
 
 SELECT
