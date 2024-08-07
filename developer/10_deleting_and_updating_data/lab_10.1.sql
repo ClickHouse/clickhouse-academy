@@ -9,6 +9,7 @@ ENGINE = ReplacingMergeTree
 PRIMARY KEY month;
 
 --Step 2:
+-- If you are using ClickHouse OSS, use `parseDateTime(date, '%d/%m/%Y')` instead of `toDate(date)`.
 INSERT INTO rates_monthly
     SELECT
         toDate(date) AS month,
