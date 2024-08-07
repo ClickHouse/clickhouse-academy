@@ -31,3 +31,9 @@ SELECT * FROM messages;
 
 --Step 7:
 SELECT * FROM messages FINAL;
+
+--Step 8:
+INSERT INTO messages VALUES 
+   (1, '2024-07-03', 'Adios', 1);
+
+SELECT * FROM messages FINAL;
