@@ -41,7 +41,7 @@ CREATE TABLE crypto_raw (
     USD_price_change_1_day Float32,
     BTC_price_change_1_day Float32,
     crypto_name LowCardinality(String),
-    crypto_type Nullable(UInt8),
+    crypto_type UInt8,
     ticker LowCardinality(String),
     max_supply Float32,
     site_url LowCardinality(String),
