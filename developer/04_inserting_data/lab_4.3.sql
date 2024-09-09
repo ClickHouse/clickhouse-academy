@@ -39,6 +39,11 @@ SETTINGS
 format_csv_delimiter='~',
 schema_inference_hints='approved_amount UInt32, recommended_amount UInt32';
 
+/*
+ * No, the command above does not work. It fails becuase the data contains `n/a`
+ * in the `approved_amount` that cannot be parsed to UInt32.
+ */
+
 --Step 7:
 CREATE TABLE operating_budget (
     fiscal_year LowCardinality(String),
