@@ -12,7 +12,7 @@ FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/pypi/2023/pyp
 
 --Step 4:
 CREATE TABLE pypi (
-    TIMESTAMP DateTime,
+    TIMESTAMP DateTime64,
     COUNTRY_CODE String,
     URL String,
     PROJECT String
