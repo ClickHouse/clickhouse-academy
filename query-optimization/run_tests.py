@@ -39,9 +39,9 @@ def run_query(table, query):
     # Use subprocess to execute the ClickHouse query and capture the execution time
     result = subprocess.run(
         # connect to ClickHouse Cloud
-        ['clickhouse', 'client', '--host', host, '--secure', '--password', password, '-q', query_with_table], 
+        #['clickhouse', 'client', '--host', host, '--secure', '--password', password, '-q', query_with_table], 
         # connect to local Clickhouse (localhost:9000)
-        # ['clickhouse', 'client', '-q', query_with_table],
+        ['clickhouse', 'client', '-q', query_with_table],
         stderr=subprocess.PIPE,
         stdout=subprocess.DEVNULL,
         text=True
@@ -115,8 +115,6 @@ def main():
             table_results = run_benchmark_for_table(table, query_file)
             all_results.append(table_results)
             print("=======================================")
-
-
     else:
         # Case 2: Specific table name, so query_file is required
         if len(sys.argv) < 3:
