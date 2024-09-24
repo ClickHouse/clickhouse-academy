@@ -3,6 +3,11 @@ import statistics
 import time as tm
 import sys
 
+# TODO: Modify for your connection details
+user="default"
+password="xyzzy"
+host="my-host.us-east-1.aws.clickhouse.cloud"
+
 # Define the mapping of tables to their respective queries.sql files
 table_query_mapping = {
     "nyc_taxi": "queries.sql",
@@ -33,8 +38,7 @@ def run_query(table, query):
     start_time = tm.time()
     # Use subprocess to execute the ClickHouse query and capture the execution time
     result = subprocess.run(
-        ['clickhouse', 'client', '-q', query_with_table],
-        # ['clickhouse', 'client', '--host', 'xyz.eu-central-1.aws.clickhouse.cloud', '--secure', '--password', 'xyz', '-q', query_with_table], # uncomment to use the cloud
+        ['clickhouse', 'client', '--host', host, '--secure', '--password', password, '-q', query_with_table], 
         stderr=subprocess.PIPE,
         stdout=subprocess.DEVNULL,
         text=True
