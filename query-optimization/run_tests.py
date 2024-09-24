@@ -29,11 +29,18 @@ def run_query(table, query):
     # Use subprocess to execute the ClickHouse query and capture the execution time
     result = subprocess.run(
         ['clickhouse', 'client', '-q', query_with_table],
+        # ['clickhouse', 'client', '--host', 'xyz.eu-central-1.aws.clickhouse.cloud', '--secure', '--password', 'xyz', '-q', query_with_table], # uncomment to use the cloud
         stderr=subprocess.PIPE,
         stdout=subprocess.DEVNULL,
         text=True
     )
     end_time = tm.time()
+
+    # Check for errors
+    if result.returncode != 0:
+        print(f"Error executing query on table '{table}': {result.stderr}")
+        raise Exception(f"Query failed with return code {result.returncode}")
+
     tm.sleep(1) # Optional sleep for consistency between runs
     return end_time - start_time
 
@@ -46,22 +53,40 @@ def benchmark_query(table, query):
     # Calculate average of middle 3 times
     return statistics.mean(middle_times)
 
-# Main function to run the benchmark
+# Main function to run the benchmark and collect results
 def run_benchmark_for_table(table, query_file, query_number=None):
     # Read the queries from the associated query file
     with open(query_file, 'r') as f:
         queries = f.readlines()
+
+    table_results = []
 
     # If query_number is provided, execute only that query
     if query_number:
         query = queries[query_number - 1].strip()
         avg_time = benchmark_query(table, query)
         print(f"Average time for query {query_number}: {avg_time:.3f} sec")
+        table_results.append(avg_time)
     else:
         # Loop through each query if no query number is provided
         for i, query in enumerate(queries, start=1):
             avg_time = benchmark_query(table, query.strip())
             print(f"Average time for query {i}: {avg_time:.3f} sec")
+            table_results.append(avg_time)
+
+    return table_results
+
+def print_final_results(all_results):
+    if not all_results:
+      return
+
+    # Print final results in a tabular format
+    print("\nFinal results (queries across tables):")
+    print("=======================================")
+    # Print results in the format: t1_q1 t2_q1 t3_q1 ...
+    for query_idx in range(len(all_results[0])):
+        row = [f"{all_results[table_idx][query_idx]:.3f}" for table_idx in range(len(all_results))]
+        print(" ".join(row))
 
 def main():
     if len(sys.argv) < 2:
@@ -69,14 +94,17 @@ def main():
         sys.exit(1)
 
     table_name = sys.argv[1]
+    all_results = []
 
     # Case 1: If table_name is "all_tables", run benchmark for all tables in the mapping
     if table_name == "all_tables":
-        all_results = []
         for table, query_file in table_query_mapping.items():
             print(f"Running queries for table '{table}' using '{query_file}'")
-            run_benchmark_for_table(table, query_file)
+            table_results = run_benchmark_for_table(table, query_file)
+            all_results.append(table_results)
             print("=======================================")
+
+
     else:
         # Case 2: Specific table name, so query_file is required
         if len(sys.argv) < 3:
@@ -92,7 +120,12 @@ def main():
             run_benchmark_for_table(table_name, query_file, query_number)
         else:
             print(f"Running queries for table '{table_name}' using '{query_file}'")
-            run_benchmark_for_table(table_name, query_file)
+            table_results = run_benchmark_for_table(table_name, query_file)
+            all_results.append(table_results)
+            print("=======================================")
+
+    # Print final summary of results
+    print_final_results(all_results)
 
 if __name__ == "__main__":
     main()
