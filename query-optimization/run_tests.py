@@ -42,7 +42,6 @@ def run_query(table, query):
         ['clickhouse', 'client', '--host', host, '--secure', '--password', password, '-q', query_with_table], 
         # connect to local Clickhouse (localhost:9000)
         # ['clickhouse', 'client', '-q', query_with_table],
-        # ['clickhouse', 'client', '--host', 'xyz.eu-central-1.aws.clickhouse.cloud', '--secure', '--password', 'xyz', '-q', query_with_table], # uncomment to use the cloud
         stderr=subprocess.PIPE,
         stdout=subprocess.DEVNULL,
         text=True
