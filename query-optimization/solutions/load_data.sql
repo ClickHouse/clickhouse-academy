@@ -9,9 +9,12 @@
 CREATE TABLE nyc_taxi
 ENGINE = MergeTree 
 ORDER BY () EMPTY
-AS SELECT * FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/nyc-taxi/clickhouse-academy/nyc_taxi_h1_2009.parquet');
+AS SELECT * FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/nyc-taxi/clickhouse-academy/nyc_taxi_h1-2009.parquet');
 
 SHOW CREATE TABLE tmp_nyc_taxi format vertical;
+
+INSERT INTO nyc_taxi
+SELECT * FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/nyc-taxi/clickhouse-academy/nyc_taxi_h1-2009.parquet');
 
 -- Create and populate taxi zone lookup table
 CREATE TABLE taxi_zone_lookup
