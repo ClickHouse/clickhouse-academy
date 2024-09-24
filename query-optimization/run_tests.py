@@ -38,7 +38,10 @@ def run_query(table, query):
     start_time = tm.time()
     # Use subprocess to execute the ClickHouse query and capture the execution time
     result = subprocess.run(
+        # connect to ClickHouse Cloud
         ['clickhouse', 'client', '--host', host, '--secure', '--password', password, '-q', query_with_table], 
+        # connect to local Clickhouse (localhost:9000)
+        # ['clickhouse', 'client', '-q', query_with_table],
         stderr=subprocess.PIPE,
         stdout=subprocess.DEVNULL,
         text=True
