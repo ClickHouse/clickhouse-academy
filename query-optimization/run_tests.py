@@ -5,27 +5,30 @@ import sys
 
 # TODO: Modify for your connection details
 user="default"
-password="xyzzy"
-host="my-host.us-east-1.aws.clickhouse.cloud"
+host="localhost"
+port="9000"
+password=""
+secure = '' if host == 'localhost' else '--secure'
 
 # Define the mapping of tables to their respective queries.sql files
-table_query_mapping = {
-    "nyc_taxi": "queries.sql",
-    "nyc_taxi_opt3": "queries.sql",
-    "nyc_taxi_opt4_1": "queries.sql",
-    "nyc_taxi_opt4_2": "solutions/queries_opt4_2.sql",
-    "nyc_taxi_opt5_1": "solutions/queries_opt4_2.sql",
-    "nyc_taxi_opt5_2": "solutions/queries_opt4_2.sql",
-    "nyc_taxi_opt5_3": "solutions/queries_opt4_2.sql",
-    "nyc_taxi_opt5_4": "solutions/queries_opt4_2.sql",
-    "nyc_taxi_opt5_5": "solutions/queries_opt4_2.sql",
-    "nyc_taxi_opt5_1": "solutions/queries_opt6_1.sql",
-    "nyc_taxi_opt5_1": "solutions/queries_opt6_2.sql",
-    "nyc_taxi_opt5_1": "solutions/queries_opt6_3.sql",
-    "nyc_taxi_opt5_1": "solutions/queries_opt6_4.sql",
-    "nyc_taxi_opt7": "solutions/queries_opt7.sql",
-    "nyc_taxi_opt8": "solutions/queries_opt8.sql",
-}
+table_query_test_mapping = [
+    ("nyc_taxi", "queries.sql"),
+    ("nyc_taxi_opt3", "queries.sql"),
+    ("nyc_taxi_opt4_1", "queries.sql"),
+    ("nyc_taxi_opt4_2", "solutions/queries_opt4_2.sql"),
+    ("nyc_taxi_opt5_1", "solutions/queries_opt4_2.sql"),
+    ("nyc_taxi_opt5_2", "solutions/queries_opt4_2.sql"),
+    ("nyc_taxi_opt5_3", "solutions/queries_opt4_2.sql"),
+    ("nyc_taxi_opt5_4", "solutions/queries_opt4_2.sql"),
+    ("nyc_taxi_opt5_5", "solutions/queries_opt4_2.sql"),
+    ("nyc_taxi_opt5_1", "solutions/queries_opt6_1.sql"),
+    ("nyc_taxi_opt5_1", "solutions/queries_opt6_2.sql"),
+    ("nyc_taxi_opt5_1", "solutions/queries_opt6_3.sql"),
+    ("nyc_taxi_opt5_1", "solutions/queries_opt6_4.sql"),
+    ("nyc_taxi_opt7", "solutions/queries_opt7.sql"),
+    ("nyc_taxi_opt8", "solutions/queries_opt7.sql"),
+    ("nyc_taxi_opt8", "solutions/queries_opt9.sql"),
+]
 
 # Define the number of runs per query
 runs = 5
@@ -35,13 +38,13 @@ def run_query(table, query):
     query_with_table = query.replace("$TABLE", table)
     query_with_table = query_with_table + " SETTINGS enable_filesystem_cache=0"
 
+    # connect to ClickHouse
+    command = ['clickhouse', 'client', '--host', host, '--port', port, secure, '--password', password, '-q', query_with_table]
+
     start_time = tm.time()
     # Use subprocess to execute the ClickHouse query and capture the execution time
     result = subprocess.run(
-        # connect to ClickHouse Cloud
-        ['clickhouse', 'client', '--host', host, '--secure', '--password', password, '-q', query_with_table], 
-        # connect to local Clickhouse (localhost:9000)
-        # ['clickhouse', 'client', '-q', query_with_table],
+        command,
         stderr=subprocess.PIPE,
         stdout=subprocess.DEVNULL,
         text=True
@@ -65,8 +68,8 @@ def benchmark_query(table, query):
     # Calculate average of middle 3 times
     return statistics.mean(middle_times)
 
-# Main function to run the benchmark and collect results
-def run_benchmark_for_table(table, query_file, query_number=None):
+# Main function to run the tests and collect results
+def run_tests_for_table(table, query_file, query_number=None):
     # Read the queries from the associated query file
     with open(query_file, 'r') as f:
         queries = f.readlines()
@@ -108,11 +111,11 @@ def main():
     table_name = sys.argv[1]
     all_results = []
 
-    # Case 1: If table_name is "all_tables", run benchmark for all tables in the mapping
-    if table_name == "all_tables":
-        for table, query_file in table_query_mapping.items():
+    # Case 1: If table_name is "all_tests", run tests for all steps in the mapping
+    if table_name == "all_tests":
+        for table, query_file in table_query_test_mapping:
             print(f"Running queries for table '{table}' using '{query_file}'")
-            table_results = run_benchmark_for_table(table, query_file)
+            table_results = run_tests_for_table(table, query_file)
             all_results.append(table_results)
             print("=======================================")
 
@@ -129,10 +132,10 @@ def main():
         if len(sys.argv) == 4:
             query_number = int(sys.argv[3])
             print(f"Running query {query_number} for table '{table_name}' using '{query_file}'")
-            run_benchmark_for_table(table_name, query_file, query_number)
+            run_tests_for_table(table_name, query_file, query_number)
         else:
             print(f"Running queries for table '{table_name}' using '{query_file}'")
-            table_results = run_benchmark_for_table(table_name, query_file)
+            table_results = run_tests_for_table(table_name, query_file)
             all_results.append(table_results)
             print("=======================================")
 
