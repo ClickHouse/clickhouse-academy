@@ -10,7 +10,7 @@ CLICKHOUSE_PASSWORD=""  # Use your actual password or pass as an environment var
 SQL_FILE="setup.sql"
 
 # Execute the commands from the SQL file
-echo clickhouse client \
+clickhouse client \
   --host $CLICKHOUSE_HOST \
   --port $CLICKHOUSE_PORT \
   --user $CLICKHOUSE_USER \
