@@ -309,7 +309,7 @@ CREATE OR REPLACE TABLE nyc_taxi_opt7
     `tip_amount` Decimal32(2),
     `tolls_amount` Decimal32(2),
     `total_amount` Decimal32(2),
-    `day` Date MATERIALIZED toDate(pickup_datetime),
+    `ride_date` Date MATERIALIZED toDate(pickup_datetime),
     `trip_time` UInt32 MATERIALIZED dateDiff('s', pickup_datetime, dropoff_datetime)::UInt32
 )
 ENGINE = MergeTree
@@ -338,7 +338,7 @@ CREATE OR REPLACE TABLE nyc_taxi_opt8
     `tip_amount` Decimal(9, 2),
     `tolls_amount` Decimal(9, 2),
     `total_amount` Decimal(9, 2),
-    `day` Date MATERIALIZED toDate(pickup_datetime),
+    `ride_date` Date MATERIALIZED toDate(pickup_datetime),
     `trip_time` UInt32 MATERIALIZED dateDiff('s', pickup_datetime, dropoff_datetime)::UInt32,
     PROJECTION proj_trip_distance_pickup_datetime
     (
