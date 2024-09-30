@@ -6,8 +6,12 @@ import sys
 # TODO: Modify for your connection details
 user="default"
 host="localhost"
-port="9000"
 password=""
+#host='<XYZ>.eu-central-1.aws.clickhouse.cloud' # if using cloud
+#password="ZXY"
+
+# There is no need to modify this
+port = "9000" if host == 'localhost' else '9440'
 secure = '' if host == 'localhost' else '--secure'
 
 # Define the mapping of tables to their respective queries.sql files
