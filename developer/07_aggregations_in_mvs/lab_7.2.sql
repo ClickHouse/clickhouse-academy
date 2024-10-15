@@ -75,8 +75,8 @@ SELECT
     max(max_price)
 FROM uk_prices_aggs_dest
 WHERE
-    month >= (toStartOfMonth(now()) - (INTERVAL 12 MONTH))
-    AND month < toStartOfMonth(now())
+    month >= toDate('2023-01-01')
+    AND month < toDate('2024-01-01')
 GROUP BY month
 ORDER BY month DESC;
 
