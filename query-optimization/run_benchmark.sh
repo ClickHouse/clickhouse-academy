@@ -17,7 +17,7 @@
 # Which percentile times to display?
 PERCENTILE=80.0
 # How much iterations of each query?
-ITERATIONS=30
+ITERATIONS=15
 
 # clickhouse-benchmark options
 OPTIONS="--secure --iterations=$ITERATIONS --delay=0 --enable_filesystem_cache=0"
@@ -48,9 +48,12 @@ else
     query_files=`ls benchmark_query_*.sql`
 fi 
 
-echo "** Using table $test_table"
+echo "** Test table: $db.$test_table"
+echo "** Query file(s): $query_files"
+
 for query_file in $query_files
 do
-  echo "** Query $query_file:"
-  cat $query_file | sed "s/\$TABLE/$test_table/g" | clickhouse benchmark $OPTIONS --host $host --password $pwd --port $port --database $db 2>&1 | grep $PERCENTILE 
+  echo "*********************************************************************"
+  echo "**** Running $query_file on $db.$test_table ( $ITERATIONS iterations ):"
+  cat $query_file | sed "s/\$TABLE/$test_table/g" | clickhouse benchmark $OPTIONS --host $host --password $pwd --port $port --database $db 
 done

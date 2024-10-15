@@ -10,14 +10,14 @@ SELECT
 FROM nyc_taxi;
 
 -- query 3: What are the top 10 pickup zones?
-SELECT
-  tzl.borough as borough, tzl.zone as zone, count() 
-FROM nyc_taxi as nyct
-JOIN taxi_zone_lookup as tzl
-ON nyct.pickup_location_id = tzl.id
-GROUP BY borough, zone
-ORDER BY 3 DESC
-LIMIT 10;rate
+SELECT 
+  tzl.borough, tzl.zone, count() 
+FROM nyc_taxi AS nyct 
+JOIN taxi_zone_lookup AS tzl 
+ON nyct.pickup_location_id = tzl.id 
+GROUP BY tzl.borough, tzl.zone 
+ORDER BY 3 DESC 
+LIMIT 10;
 
 -- query 4: What is the sum of mta taxes paid?
 SELECT SUM(mta_tax) FROM nyc_taxi;
@@ -26,24 +26,14 @@ SELECT SUM(mta_tax) FROM nyc_taxi;
 SELECT avg(total_amount) FROM nyc_taxi WHERE trip_distance > 5;
 
 -- query 6: What is the distance distribution in rides with avg(speed) > 100mph (impossible in new york)
-WITH
-    dateDiff('s', pickup_datetime, dropoff_datetime) as trip_time,
-    trip_distance / trip_time * 3600 AS speed_mph
-SELECT
-    quantiles(0.5, 0.75, 0.9, 0.99)(trip_distance)
-FROM
-    nyc_taxi
-WHERE
-    speed_mph > 100;
-
 WITH 
     dateDiff('s', pickup_datetime, dropoff_datetime) AS trip_time, 
-    trip_distance / trip_time * 3600 AS speed_mph 
+    trip_distance::Decimal64(2) / trip_time * 3600 AS speed_mph 
 SELECT 
     quantiles(0.5, 0.75, 0.9, 0.99)(trip_distance) 
 FROM 
     nyc_taxi 
-WHERE speed_mph > 100 AND trip_time > 0
+WHERE trip_time > 0 AND speed_mph > 100 
 
 -- query 7: What are the average cost and distance per vendor?
 SELECT
@@ -79,20 +69,21 @@ SELECT
 FROM
   nyc_taxi
 GROUP BY passenger_count
-ORDER BY count DESC;
+ORDER BY count() DESC;
 
 -- query 10: What are the the average fare and distance of taxi rides to any airport?
-SELECT
-    avg(fare_amount) AS avg_fare,
-    avg(trip_distance) AS avg_distance
-FROM
-    taxi_zone_lookup
-JOIN
-    nyc_taxi
-ON
-    pickup_location_id = taxi_zone_lookup.id
-WHERE
+SELECT 
+    avg(fare_amount),
+    avg(trip_distance) 
+FROM 
+    taxi_zone_lookup 
+JOIN 
+    nyc_table
+ON 
+    pickup_location_id = taxi_zone_lookup.id 
+WHERE 
     taxi_zone_lookup.zone ILIKE '%airport%';
+
 
 -- query 11: What is the weekly count of the number of rides and their average cost?
 WITH
