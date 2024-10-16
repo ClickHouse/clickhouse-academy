@@ -1,7 +1,7 @@
 SELECT avg(dateDiff('s', pickup_datetime, dropoff_datetime)) FROM $TABLE
 SELECT quantiles(0.5, 0.75, 0.9, 0.99)(total_amount) FROM $TABLE
 SELECT tzl.borough, tzl.zone, count() FROM $TABLE AS nyct JOIN taxi_zone_lookup AS tzl ON nyct.pickup_location_id = tzl.id GROUP BY tzl.borough, tzl.zone ORDER BY 3 DESC LIMIT 10
-SELECT SUM(mta_tax) FROM $TABLE
+SELECT SUM(tolls_amount) FROM $TABLE
 SELECT avg(total_amount) FROM $TABLE WHERE trip_distance > 5
 WITH dateDiff('s', pickup_datetime, dropoff_datetime) AS trip_time, trip_distance::Decimal64(2) / trip_time * 3600 AS speed_mph SELECT quantiles(0.5, 0.75, 0.9, 0.99)(trip_distance) FROM $TABLE WHERE speed_mph > 100 AND trip_time > 0
 SELECT vendor_id, avg(total_amount), avg(trip_distance) FROM $TABLE GROUP BY vendor_id ORDER BY vendor_id DESC

@@ -17,7 +17,7 @@ INSERT INTO nyc_taxi_inferred SELECT * FROM s3Cluster('default','https://dataset
 -- INSERT INTO nyc_taxi_inferred SELECT * FROM s3Cluster('default','https://datasets-documentation.s3.eu-west-3.amazonaws.com/nyc-taxi/clickhouse-academy/nyc_taxi_2009.parquet');
 
 -- Insert full dataset
---INSERT INTO nyc_taxi_inferred SELECT * FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/nyc-taxi/clickhouse-academy/nyc_taxi_2009-2010.parquet');
+-- INSERT INTO nyc_taxi_inferred SELECT * FROM s3Cluster('default','https://datasets-documentation.s3.eu-west-3.amazonaws.com/nyc-taxi/clickhouse-academy/nyc_taxi_2009-2010.parquet');
 
 
 -- Create schema with proper data types
@@ -46,7 +46,7 @@ ORDER BY tuple();
 -- Insert from existing
 INSERT INTO nyc_taxi SELECT * FROM nyc_taxi_inferred;
 
--- Creaet and populate lookup table with inferred schema
+-- Create and populate lookup table with inferred schema
 
 -- CREATE OR REPLACE TABLE taxi_zone_lookup_inferred
 -- ENGINE = MergeTree 
@@ -197,7 +197,7 @@ INSERT INTO nyc_taxi_key_5 SELECT * FROM nyc_taxi;
 
 -- Replace lookup table with dictionary
 
-RENAME TABLE taxi_zone_lookup to taxi_zone_lookup_table
+RENAME TABLE taxi_zone_lookup TO taxi_zone_lookup_table;
 
 CREATE DICTIONARY taxi_zone_lookup
 (

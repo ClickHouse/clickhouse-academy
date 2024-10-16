@@ -48,12 +48,11 @@ else
     query_files=`ls benchmark_query_*.sql`
 fi 
 
-echo "** Test table: $db.$test_table"
-echo "** Query file(s): $query_files"
-
 for query_file in $query_files
 do
   echo "*********************************************************************"
   echo "**** Running $query_file on $db.$test_table ( $ITERATIONS iterations ):"
-  cat $query_file | sed "s/\$TABLE/$test_table/g" | clickhouse benchmark $OPTIONS --host $host --password $pwd --port $port --database $db 
+  query=$(cat $query_file | sed "s/\$TABLE/$test_table/g")
+  echo "**** clickhouse benchmark $OPTIONS --host $host --password $pwd --port $port --database $db --query $query *****"
+  clickhouse benchmark $OPTIONS --host $host --password $pwd --port $port --database $db --query "$query"
 done

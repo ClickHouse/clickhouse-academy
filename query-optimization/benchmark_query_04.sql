@@ -1,1 +1,1 @@
-SELECT SUM(mta_tax) FROM $TABLE
+SELECT SUM(tolls_amount) FROM $TABLE

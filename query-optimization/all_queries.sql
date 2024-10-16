@@ -19,13 +19,13 @@ GROUP BY tzl.borough, tzl.zone
 ORDER BY 3 DESC 
 LIMIT 10;
 
--- query 4: What is the sum of mta taxes paid?
-SELECT SUM(mta_tax) FROM nyc_taxi;
+-- query 4: What is the sum of tolls paid?
+SELECT SUM(tolls_amount) FROM nyc_taxi;
 
 -- query 5: What is the average price of trips longer than 5 miles?
 SELECT avg(total_amount) FROM nyc_taxi WHERE trip_distance > 5;
 
--- query 6: What is the distance distribution in rides with avg(speed) > 100mph (impossible in new york)
+-- query 6: What is the distance distribution in rides with avg(speed) > 100mph (impossible in New York City)
 WITH 
     dateDiff('s', pickup_datetime, dropoff_datetime) AS trip_time, 
     trip_distance::Decimal64(2) / trip_time * 3600 AS speed_mph 
