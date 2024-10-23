@@ -1,1 +1,1 @@
-SELECT tzl.borough, tzl.zone, count() FROM $TABLE AS nyct JOIN taxi_zone_lookup AS tzl ON nyct.pickup_location_id = tzl.id GROUP BY tzl.borough, tzl.zone ORDER BY 3 DESC LIMIT 10 
+SELECT taxi_zone_lookup.borough, taxi_zone_lookup.zone, count() FROM $TABLE AS taxi_rides JOIN taxi_zone_lookup ON taxi_rides.pickup_location_id = taxi_zone_lookup.id GROUP BY taxi_zone_lookup.borough, taxi_zone_lookup.zone ORDER BY 3 DESC LIMIT 10 

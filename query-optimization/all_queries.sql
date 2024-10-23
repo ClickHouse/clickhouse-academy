@@ -1,6 +1,6 @@
 -- query 1: What is the average trip time?
 SELECT 
-  avg(dateDiff('s', pickup_datetime,dropoff_datetime)))
+  avg(dateDiff('s', pickup_datetime,dropoff_datetime))
 FROM 
   nyc_taxi;
 
@@ -10,22 +10,24 @@ SELECT
 FROM nyc_taxi;
 
 -- query 3: What are the top 10 pickup zones?
-SELECT 
-  tzl.borough, tzl.zone, count() 
-FROM nyc_taxi AS nyct 
-JOIN taxi_zone_lookup AS tzl 
-ON nyct.pickup_location_id = tzl.id 
-GROUP BY tzl.borough, tzl.zone 
+SELECT taxi_zone_lookup.borough, taxi_zone_lookup.zone, count() 
+FROM nyc_taxi AS taxi_rides 
+JOIN taxi_zone_lookup 
+ON taxi_rides.pickup_location_id = taxi_zone_lookup.id 
+GROUP BY taxi_zone_lookup.borough, taxi_zone_lookup.zone 
 ORDER BY 3 DESC 
 LIMIT 10;
 
 -- query 4: What is the sum of tolls paid?
-SELECT SUM(tolls_amount) FROM nyc_taxi;
+SELECT sum(tolls_amount) 
+FROM nyc_taxi;
 
 -- query 5: What is the average price of trips longer than 5 miles?
-SELECT avg(total_amount) FROM nyc_taxi WHERE trip_distance > 5;
+SELECT avg(total_amount) 
+FROM nyc_taxi 
+WHERE trip_distance > 5;
 
--- query 6: What is the distance distribution in rides with avg(speed) > 100mph (impossible in New York City)
+-- query 6: What is the distance distribution in rides with avg(speed) > 100mph
 WITH 
     dateDiff('s', pickup_datetime, dropoff_datetime) AS trip_time, 
     trip_distance::Decimal64(2) / trip_time * 3600 AS speed_mph 
@@ -43,7 +45,7 @@ SELECT
 FROM
   nyc_taxi
 GROUP BY vendor_id
-ORDER BY 1 DESC;
+ORDER BY vendor_id DESC;
 
 -- query 8: Quarter main summary (trips, distance, total, tips)
 SELECT 
@@ -61,7 +63,7 @@ GROUP BY
 ORDER BY 
     trip_count DESC;
 
--- query 9: What is the number of trips per passenger_count?
+-- query 9: Total number of trips per passenger_count?
 SELECT
   passenger_count,
   count() as count,
@@ -71,14 +73,14 @@ FROM
 GROUP BY passenger_count
 ORDER BY count() DESC;
 
--- query 10: What are the the average fare and distance of taxi rides to any airport?
+-- query 10: What are the average fare and distance of rides originating at airports?
 SELECT 
     avg(fare_amount),
     avg(trip_distance) 
 FROM 
     taxi_zone_lookup 
 JOIN 
-    nyc_table
+    nyc_taxi
 ON 
     pickup_location_id = taxi_zone_lookup.id 
 WHERE 
@@ -96,13 +98,13 @@ FROM nyc_taxi
 GROUP BY week
 ORDER BY week ASC;
 
--- query 12: What is the most expensive taxi ride per ride_date, including its detailed destination?
+-- query 12: The most expensive ride (including destination details) for each date
 SELECT
     ride_date,
     max_fare,
     dropoff_id,
-    tzl.borough,
-    tzl.zone
+    taxi_zone_lookup.borough,
+    taxi_zone_lookup.zone
 FROM
     (
         SELECT
@@ -115,8 +117,8 @@ FROM
             toDate(pickup_datetime)
     ) AS max_fares
 JOIN
-    taxi_zone_lookup AS tzl
+    taxi_zone_lookup
 ON
-    max_fares.dropoff_id = tzl.id
+    max_fares.dropoff_id = taxi_zone_lookup.id
 ORDER BY
     ride_date ASC;
