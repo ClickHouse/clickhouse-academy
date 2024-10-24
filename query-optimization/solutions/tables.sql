@@ -244,6 +244,9 @@ ALTER TABLE nyc_taxi_with_trip_time MATERIALIZE COLUMN ride_date;
 CREATE OR REPLACE TABLE nyc_taxi_test_insert AS nyc_taxi_key_1;
 CREATE OR REPLACE TABLE nyc_taxi_test_insert_materialized AS nyc_taxi_with_trip_time;
 
+INSERT INTO nyc_taxi_test_insert SELECT * FROM nyc_taxi_key_1
+INSERT INTO nyc_taxi_test_insert_materialized SELECT * FROM nyc_taxi_key_1
+
 -- create table with projection
 CREATE OR REPLACE TABLE nyc_taxi_projection
 (
@@ -276,7 +279,6 @@ INSERT INTO nyc_taxi_projection SELECT * FROM nyc_taxi_with_trip_time;
 
 
 -- Load materialized view and AggregatingMergeTree
- 
 
 CREATE OR REPLACE TABLE nyc_taxi_pickup_location_id_trips_DEST
 (
@@ -303,49 +305,12 @@ SELECT
 FROM nyc_taxi_key_1
 GROUP BY pickup_location_id;
 
--- Bonus: Measure overhead at insert time using materialization
+-- Bonus: Measure overhead at insert time using an aggregated materialized view
 
-CREATE OR REPLACE TABLE nyc_taxi_no_mv
-(
-    `vendor_id` UInt8,
-    `pickup_datetime` DateTime,
-    `dropoff_datetime` DateTime,
-    `passenger_count` UInt8,
-    `trip_distance` Decimal32(2),
-    `ratecode_id` LowCardinality(String),
-    `pickup_location_id` UInt16,
-    `dropoff_location_id` UInt16,
-    `payment_type` UInt8,
-    `fare_amount` Decimal32(2),
-    `extra` Decimal32(2),
-    `mta_tax` Decimal32(2),
-    `tip_amount` Decimal32(2),
-    `tolls_amount` Decimal32(2),
-    `total_amount` Decimal32(2)
-)
-PRIMARY KEY (payment_type, passenger_count, pickup_datetime, dropoff_datetime);
+CREATE OR REPLACE TABLE nyc_taxi_test_insert AS nyc_taxi_key_1;
+CREATE OR REPLACE TABLE nyc_taxi_test_insert_materialized AS nyc_taxi_with_trip_time;
 
-CREATE OR REPLACE TABLE nyc_taxi_mv
-(
-    `vendor_id` UInt8,
-    `pickup_datetime` DateTime,
-    `dropoff_datetime` DateTime,
-    `passenger_count` UInt8,
-    `trip_distance` Decimal32(2),
-    `ratecode_id` LowCardinality(String),
-    `pickup_location_id` UInt16,
-    `dropoff_location_id` UInt16,
-    `payment_type` UInt8,
-    `fare_amount` Decimal32(2),
-    `extra` Decimal32(2),
-    `mta_tax` Decimal32(2),
-    `tip_amount` Decimal32(2),
-    `tolls_amount` Decimal32(2),
-    `total_amount` Decimal32(2)
-)
-PRIMARY KEY (payment_type, passenger_count, pickup_datetime, dropoff_datetime);
-
-CREATE TABLE nyc_taxi_mvoverhead_DEST
+CREATE OR REPLACE TABLE nyc_taxi_test_insert_materialized_DEST
 (
     pickup_location_id UInt16,
     number_of_trips AggregateFunction(count, UInt32)
@@ -353,15 +318,18 @@ CREATE TABLE nyc_taxi_mvoverhead_DEST
 ENGINE = AggregatingMergeTree 
 PRIMARY KEY pickup_location_id;
 
-CREATE MATERIALIZED VIEW nyc_taxi_mvoverhead_MV
-TO nyc_taxi_mvoverhead_DEST
+DROP TABLE IF EXISTS nyc_taxi_test_insert_materialized_MV;
+
+CREATE MATERIALIZED VIEW nyc_taxi_test_insert_materialized_MV
+TO nyc_taxi_test_insert_materialized_DEST
 AS 
 SELECT
    pickup_location_id,
    countState() as number_of_trips
-FROM nyc_taxi_mv
+FROM nyc_taxi_test_insert_materialized
 GROUP BY pickup_location_id;
 
-INSERT INTO nyc_taxi_no_mv SELECT * FROM nyc_taxi_key_1
+INSERT INTO nyc_taxi_test_insert_materialized SELECT * FROM nyc_taxi_key_1;
 
-INSERT INTO nyc_taxi_mv SELECT * FROM nyc_taxi_key_1
+INSERT INTO nyc_taxi_test_insert SELECT * FROM nyc_taxi_key_1;
+
