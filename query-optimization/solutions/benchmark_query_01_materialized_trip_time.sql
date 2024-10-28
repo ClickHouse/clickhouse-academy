@@ -1,0 +1,1 @@
+SELECT avg(trip_time) FROM $TABLE
