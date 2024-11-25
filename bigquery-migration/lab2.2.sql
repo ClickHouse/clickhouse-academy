@@ -33,7 +33,7 @@ FROM (
     GROUP BY user_id
 );
 
--- Step 4: What are the minimum, maximum and average number of badges issued per day?
+-- Step 4: What are the minimum, maximum and average number of badges issued (include the min and max days)?
 SELECT
     min(count),
     argMin(day, count),
@@ -43,12 +43,12 @@ SELECT
 FROM
     (SELECT toDate(date) as day, count() as count FROM badges GROUP BY day);
 
--- Step 5: What was the badge distribution in the last year by day?
+-- Step 5: What was the badge distribution by day in 2021?
 SELECT
     toDate(date) AS day,
     count() AS count
 FROM badges
-WHERE day >= toDate(now()) - INTERVAL 1 YEAR
+WHERE day >= toDate('2021-01-01') AND day < toDate('2022-01-01')
 GROUP BY day;
 
 -- Step 6: What is the badge distribution over time by month?
