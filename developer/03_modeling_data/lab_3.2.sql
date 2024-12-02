@@ -38,8 +38,8 @@ FROM crypto_prices
 WHERE crypto_name = 'Bitcoin';
 
 /*
- * Only a single granule was processed. As crypto_name is a primary key,
- * ClickHouse use it to optmize the query.
+ * Only a very small number of granules was processed. As crypto_name is a
+ * primary key, ClickHouse use it to optmize the query.
  */
 
 --Step 7:
