@@ -1,1 +1,1 @@
-SELECT passenger_count, count(), avg(fare_amount) FROM $TABLE GROUP BY passenger_count ORDER BY count() DESC
+SELECT payment_type, count() AS trip_count, formatReadableQuantity(sum(trip_distance)::Float64) AS total_distance, formatReadableQuantity(sum(total_amount)::Float64) AS total_amount_sum, formatReadableQuantity(sum(tip_amount)::Float64) AS tip_amount_sum FROM $TABLE WHERE pickup_datetime >= '2009-01-01' AND pickup_datetime < '2009-04-01' GROUP BY payment_type ORDER BY trip_count DESC
