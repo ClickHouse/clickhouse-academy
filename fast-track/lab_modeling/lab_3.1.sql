@@ -1,7 +1,7 @@
---Step 1:
-DESCRIBE pypi;
+-- Show schema
+SHOW CREATE TABLE pypi;
 
---Step 2:
+-- how many unique values are in COUNTRY_CODE
 SELECT uniqExact(COUNTRY_CODE)
 FROM pypi;
 
@@ -10,7 +10,6 @@ FROM pypi;
  * makes it a great candidate for LowCardinality.
  */
 
---Step 3:
 SELECT
     uniqExact(PROJECT),
     uniqExact(URL)
@@ -18,14 +17,14 @@ FROM pypi;
 
 /*
  * There are over 24,000 unique values of PROJECT, which is large - but not too
- * large. We will try LowCardinality on this column as well and see if it
+ * large. Try LowCardinality on this column as well and see if it
  * improves storage and query performance. The URL has over 79,000 unique
- * values, and we can assume that a URL could have a lot of different values,
+ * values, and you can assume that a URL could have a lot of different values,
  * so it is probably a bad choice for LowCardinality.
  */
 
---Step 4:
-CREATE TABLE pypi3 (
+-- Create a version of pypi using LowCardinality columns
+CREATE TABLE pypi_low_cardinality (
     TIMESTAMP DateTime,
     COUNTRY_CODE LowCardinality(String),
     URL String,
@@ -34,24 +33,25 @@ CREATE TABLE pypi3 (
 ENGINE = MergeTree
 PRIMARY KEY (PROJECT, TIMESTAMP);
 
-INSERT INTO pypi3
-    SELECT * FROM pypi2;
+-- Populate the table with the pypi data
+INSERT INTO pypi_low_cardinality
+    SELECT * FROM pypi;
 
---Step 5:
+--View the sizes and number of parts of all pypi* tables
 SELECT
     table,
     formatReadableSize(sum(data_compressed_bytes)) AS compressed_size,
     formatReadableSize(sum(data_uncompressed_bytes)) AS uncompressed_size,
     count() AS num_of_active_parts
 FROM system.parts
-WHERE (active = 1) AND (table LIKE 'pypi%')
+WHERE (active = 1) AND (table LIKE 'pypi%') AND (database = currentDatabase())
 GROUP BY table;
 
 --Step 6:
 SELECT
     toStartOfMonth(TIMESTAMP) AS month,
     count() AS count
-FROM pypi2
+FROM pypi_low_cardinality
 WHERE COUNTRY_CODE = 'US'
 GROUP BY
     month
