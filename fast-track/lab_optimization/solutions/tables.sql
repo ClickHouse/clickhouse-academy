@@ -11,7 +11,7 @@ AS SELECT *
 FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/nyc-taxi/clickhouse-academy/nyc_taxi_2009.parquet');
 
 -- Insert small dataset
-INSERT INTO nyc_taxi_inferred SELECT * FROM s3Cluster('default','https://datasets-documentation.s3.eu-west-3.amazonaws.com/nyc-taxi/clickhouse-academy/nyc_taxi_h1-2009.parquet');
+INSERT INTO nyc_taxi_inferred SELECT * FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/nyc-taxi/clickhouse-academy/nyc_taxi_h1-2009.parquet');
 
 -- Insert medium dataset
 -- INSERT INTO nyc_taxi_inferred SELECT * FROM s3Cluster('default','https://datasets-documentation.s3.eu-west-3.amazonaws.com/nyc-taxi/clickhouse-academy/nyc_taxi_2009.parquet');

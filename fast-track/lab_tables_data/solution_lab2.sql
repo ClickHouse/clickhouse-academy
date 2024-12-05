@@ -1,14 +1,18 @@
---Step 1:
+/* 
+* Inserting an Imperfect CSV File
+*/
+
+-- Count rows in data file
 SELECT count()
 FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/operating_budget.csv')
 SETTINGS format_csv_delimiter = '~';
 
---Step 2:
+-- Sum the actual_amount column
 SELECT formatReadableQuantity(sum(actual_amount))
 FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/operating_budget.csv')
 SETTINGS format_csv_delimiter = '~';
 
---Step 3:
+-- Try to run a query that sums up the approved_amount column
 SELECT formatReadableQuantity(sum(approved_amount))
 FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/operating_budget.csv')
 SETTINGS format_csv_delimiter = '~';
@@ -19,18 +23,19 @@ SETTINGS format_csv_delimiter = '~';
  * data, and ClickHouse inferred that column as a String.
  */
 
---Step 4:
+-- Use DESCRIBE to view the inferred schema. 
+-- approved_amount and recommended_amount columns are inferred as Nullable(String)
 DESCRIBE s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/operating_budget.csv')
 SETTINGS format_csv_delimiter = '~';
 
---Step 5:
+-- sum up the values approved_amount and recommended_amount with toUInt32OrZero.
 SELECT
     formatReadableQuantity(sum(toUInt32OrZero(approved_amount))),
     formatReadableQuantity(sum(toUInt32OrZero(recommended_amount)))
 FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/operating_budget.csv')
 SETTINGS format_csv_delimiter = '~';
 
---Step 6:
+-- does using schema_inference_hints help?
 SELECT
     formatReadableQuantity(sum(approved_amount)),
     formatReadableQuantity(sum(recommended_amount))
@@ -38,13 +43,9 @@ FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/operating_budget.cs
 SETTINGS
 format_csv_delimiter='~',
 schema_inference_hints='approved_amount UInt32, recommended_amount UInt32';
+-- It fails because the `approved_amount` contains 'n/a' which cannot be parsed to UInt32.
 
-/*
- * No, the command above does not work. It fails becuase the data contains `n/a`
- * in the `approved_amount` that cannot be parsed to UInt32.
- */
-
---Step 7:
+-- Create a table for the data with target data types
 CREATE TABLE operating_budget (
     fiscal_year LowCardinality(String),
     service LowCardinality(String),
@@ -62,7 +63,7 @@ CREATE TABLE operating_budget (
 ENGINE = MergeTree
 PRIMARY KEY (fiscal_year, program);
 
---Step 8:
+-- Insert data from file to the new table
 INSERT INTO operating_budget
     WITH
         splitByChar('(', c4) AS result
@@ -98,15 +99,15 @@ INSERT INTO operating_budget
         format_csv_delimiter = '~',
         input_format_csv_skip_first_lines=1;
 
---Step 9:
+--Select all rows from table
 SELECT * FROM operating_budget;
 
---Step 10:
+--Sum the approved_amount column for fiscal year 2022
 SELECT formatReadableQuantity(sum(approved_amount))
 FROM operating_budget
 WHERE fiscal_year = '2022';
 
---Step 11:
+--Sum the actual_amount column for 2022 and program_code 031
 SELECT sum(actual_amount)
 FROM operating_budget
 WHERE fiscal_year = '2022'
