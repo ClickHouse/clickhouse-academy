@@ -1,0 +1,1 @@
+SELECT ride_date, max_fare, dropoff_id, tzl.borough, tzl.zone FROM (SELECT toDate(pickup_datetime) AS ride_date, max(fare_amount) AS max_fare, argMax(dropoff_location_id, fare_amount) AS dropoff_id FROM nyc_taxi_with_trip_time GROUP BY toDate(pickup_datetime)) AS max_fares JOIN taxi_zone_lookup AS tzl ON max_fares.dropoff_id = tzl.id ORDER BY ride_date ASC

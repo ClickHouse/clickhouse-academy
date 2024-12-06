@@ -1,0 +1,1 @@
+SELECT taxi_zone_lookup.borough, taxi_zone_lookup.zone, count() FROM nyc_taxi AS taxi_rides JOIN taxi_zone_lookup ON taxi_rides.pickup_location_id = taxi_zone_lookup.id GROUP BY taxi_zone_lookup.borough, taxi_zone_lookup.zone ORDER BY 3 DESC LIMIT 10 
