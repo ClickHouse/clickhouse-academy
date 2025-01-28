@@ -1,0 +1,22 @@
+receivers:
+  filelog:
+    include: [ /var/log/access-structured.log ]
+    start_at: beginning
+    operators:
+      - type: json_parser
+        timestamp:
+          parse_from: attributes.time_local
+          layout: '%Y-%m-%d %H:%M:%S'
+processors:
+  batch:
+    timeout: 10s
+    send_batch_size: 1000000
+exporters:
+  debug:
+    verbosity: basic
+service:
+  pipelines:
+    logs:
+      receivers: [filelog]
+      processors: [batch]
+      exporters: [debug]
