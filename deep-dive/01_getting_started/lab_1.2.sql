@@ -41,10 +41,10 @@ ENGINE = MergeTree
 PRIMARY KEY date;
 
 -- Step 6
--- If you are using Clickhouse Cloud, run this query to insert your data into uk_prices_1
 INSERT INTO uk_prices_1
     SELECT * 
     FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/uk_property_prices/uk_prices.csv.zst');
+
 
 -- If you are using the Clickhouse OSS, run this query instead
 INSERT INTO uk_prices_1
