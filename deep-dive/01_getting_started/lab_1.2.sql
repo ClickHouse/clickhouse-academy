@@ -47,7 +47,7 @@ INSERT INTO uk_prices_1
     FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/uk_property_prices/uk_prices.csv.zst');
 
 -- If you are using the Clickhouse OSS, run this query instead
-NSERT INTO uk_prices_1
+INSERT INTO uk_prices_1
 SELECT
     c1 as id,                 
     c2 as price,        
