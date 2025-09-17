@@ -11,5 +11,6 @@ pip install pyarrow
 pip install jupyter notebook
 pip install jupyterlab
 pip install requests
+pip install jupysql
 
 
