@@ -67,7 +67,7 @@ FROM uk_prices_3
 WHERE
     county IN ['AVON','ESSEX','DEVON','KENT','CORNWALL']
     AND
-    date >= toDate('2020-01-01') AND date <= toDate('2020-12-31');
+    date >= toDate('2024-01-01') AND date <= toDate('2024-12-31');
 
 
 --Step 10:
