@@ -15,8 +15,8 @@ GROUP BY day
 ORDER BY day ASC
 """
 
-openai_df = chdb.query(query, "DataFrame")
-openai_df.sort_values(by=["day"], ascending=False).head(n=10)
+scikit_df = chdb.query(query, "DataFrame")
+scikit_df.sort_values(by=["day"], ascending=False).head(n=10)
 
 -- Step 2:
 import chdb
@@ -26,10 +26,7 @@ SELECT
     toStartOfDay(date)::Date32 AS day,
     sumIf(count, project = 'openai') AS openai_downloads,
     sumIf(count, project = 'scikit-learn') AS sklearn_downloads,
-    round(
-        sumIf(count, project = 'openai') / nullIf(sumIf(count, project = 'scikit-learn'), 0),
-        4
-    ) AS openai_to_sklearn_ratio
+    round(openai_downloads / nullIf(sklearn_downloads, 0), 4) AS openai_to_sklearn_ratio
 FROM remoteSecure(
     'sql-clickhouse.clickhouse.com',
     'pypi.pypi_downloads_per_day',
@@ -37,7 +34,6 @@ FROM remoteSecure(
 )
 WHERE toStartOfDay(date) = [insert today's date]
 GROUP BY day
-
 """
 
 df = chdb.query(query, "DataFrame")
