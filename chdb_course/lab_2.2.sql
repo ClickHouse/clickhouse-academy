@@ -4,7 +4,8 @@ aws s3 cp \
   s3://ookla-open-data/parquet/performance/type=mobile/year=2024/quarter=2/2024-04-01_performance_mobile_tiles.parquet .
 
 -- Step 3:
-arrow_table = pq.read_table("./2024-04-01_performance_mobile_tiles.parquet"
+import pyarrow.parquet as pq
+arrow_table = pq.read_table("./2024-04-01_performance_mobile_tiles.parquet")
 
 -- Step 4:
 chdb.query("""
