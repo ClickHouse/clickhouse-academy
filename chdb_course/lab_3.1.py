@@ -1,12 +1,12 @@
--- Step 1:
+#Step 1:
 pip install jupysql
 
--- Step 2:
+#Step 2:
 pip install jupyterlab
 pip install notebook
 pip install ipython
-  
---Step 3:
+
+#Step 3:
 from urllib.request import urlretrieve
 files = ['00s', '10s', '20s', '70s', '80s', '90s', 'current']
 base = "https://raw.githubusercontent.com/JeffSackmann/tennis_atp/master"
@@ -17,16 +17,16 @@ for file in files:
   )
 
 
--- Step 4:
+#Step 4:
 from chdb import dbapi
 conn = dbapi.connect(path="atp.chdb")
 
--- Step 5: 
+#Step 5:
 %load_ext sql
 %sql conn --alias chdb
 %config SqlMagic.displaylimit = None
 
--- Step 6:
+#Step 6:
 %%sql
 DESCRIBE file('atp_rankings*.csv')
 SETTINGS describe_compact_output=1,
@@ -35,7 +35,7 @@ SETTINGS describe_compact_output=1,
 
 %sql SELECT * FROM file('atp_rankings*.csv') LIMIT 5
 
--- Step 7:
+#Step 7:
 %%sql
 SELECT * REPLACE (
   toDate(parseDateTime32BestEffort(toString(ranking_date))) AS ranking_date
@@ -44,10 +44,10 @@ FROM file('atp_rankings*.csv')
 LIMIT 10
 SETTINGS schema_inference_make_columns_nullable=0
 
--- Step 8:
+#Step 8:
 %sql CREATE DATABASE atp
 
--- Step 9:
+#Step 9:
 %%sql
 CREATE TABLE atp.rankings
 ENGINE=MergeTree
@@ -58,13 +58,13 @@ SELECT * REPLACE (
 FROM file('atp_rankings*.csv')
 SETTINGS schema_inference_make_columns_nullable=0
 
--- Step 10:
+#Step 10:
 _ = urlretrieve(
     f"{base}/atp_players.csv",
     "atp_players.csv",
 )
 
--- Step 11:
+#Step 11:
 %%sql
 CREATE TABLE atp.players
 Engine=MergeTree
@@ -79,7 +79,7 @@ SELECT * REPLACE (
 FROM file('atp_players.csv')
 SETTINGS schema_inference_make_columns_nullable=0
 
--- Step 12:
+#Step 12:
 %%sql
 SELECT name_first, name_last,
        max(points) as maxPoints,
@@ -91,7 +91,7 @@ GROUP BY ALL
 ORDER BY maxPoints DESC
 LIMIT 10
 
--- Step 13:
+#Step 13:
 %%sql --save best_points --no-execute
 SELECT name_first, name_last,
        max(points) as maxPoints,
@@ -102,10 +102,10 @@ JOIN atp.rankings ON rankings.player = players.player_id
 GROUP BY ALL
 ORDER BY maxPoints DESC
 
--- Step 14:
+#Step 14:
 %sql select * FROM best_points WHERE rank=1
 
--- Step 15:
+#Step 15:
 rank = 10
 
 %%sql

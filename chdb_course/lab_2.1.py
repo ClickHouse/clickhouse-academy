@@ -1,4 +1,4 @@
--- Step 1:
+#Step 1:
 import requests
 import pandas as pd
 import chdb
@@ -10,7 +10,7 @@ response = requests.get(
 matches_df = pd.json_normalize(response.json(), sep='_')
 
 
--- Step 2:
+#Step 2:
 import requests
 import pandas as pd
 import chdb
@@ -37,5 +37,3 @@ ORDER BY total_matches DESC;
 """, "DataFrame")
 
 print(query)
-
-Answer: Argentina

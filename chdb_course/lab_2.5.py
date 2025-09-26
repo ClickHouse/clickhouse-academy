@@ -1,4 +1,4 @@
--- Step 1: 
+#Step 1:
 import chdb
 
 query = """
@@ -18,7 +18,7 @@ ORDER BY day ASC
 openai_df = chdb.query(query, "DataFrame")
 openai_df.sort_values(by=["day"], ascending=False).head(n=10)
 
--- Step 2:
+#Step 2:
 import chdb
 
 query = """
@@ -35,7 +35,7 @@ FROM remoteSecure(
     'pypi.pypi_downloads_per_day',
     'play'
 )
-WHERE toStartOfDay(date) = [insert today's date]
+WHERE toStartOfDay(date) = today()
 GROUP BY day
 
 """

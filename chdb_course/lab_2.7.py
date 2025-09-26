@@ -1,9 +1,13 @@
--- Step 1
+import chdb
+from chdb import session
+sess = session.Session()
+
+#Step 1:
 stream_result = sess.send_query("SELECT * FROM Python(taxi_query)", "CSV")
 
--- Step 2:
+#Step 2:
 import time
-  
+
 start_time = time.time()
 stream_result = sess.send_query("SELECT * FROM Python(taxi_query)", "CSV")
 end_time = time.time()

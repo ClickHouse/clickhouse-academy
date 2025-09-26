@@ -1,4 +1,4 @@
--- Step 1:
+#Step 1:
 import chdb
 
 query = """
@@ -10,5 +10,3 @@ FROM s3(
 """
 
 print(chdb.query(query, 'Vertical'))
-
-Answer: 28,034,255 rows, 30 row groups
