@@ -3,7 +3,7 @@ import chdb
 
 query = """
 SELECT
-    toStartOfDay(date)::Date32 AS day,
+    toStartOfDay(date-1)::Date32 AS day,
     sum(count) AS num_of_downloads
 FROM remoteSecure(
   'sql-clickhouse.clickhouse.com',
@@ -16,14 +16,14 @@ ORDER BY day ASC
 """
 
 openai_df = chdb.query(query, "DataFrame")
-openai_df.sort_values(by=["day"], ascending=False).head(n=10)
+openai_df.sort_values(by=["day"], ascending=False).head(n=1)
 
 -- Step 2:
 import chdb
 
-query = """
+query2 = """
 SELECT
-    toStartOfDay(date)::Date32 AS day,
+    toStartOfDay(date-1)::Date32 AS day,
     sumIf(count, project = 'openai') AS openai_downloads,
     sumIf(count, project = 'scikit-learn') AS sklearn_downloads,
     round(
@@ -35,10 +35,9 @@ FROM remoteSecure(
     'pypi.pypi_downloads_per_day',
     'play'
 )
-WHERE toStartOfDay(date) = [insert today's date]
 GROUP BY day
-
+ORDER BY day DESC
+LIMIT 1
 """
 
-df = chdb.query(query, "DataFrame")
-print(df)
+df = chdb.query(query2, "DataFrame")
