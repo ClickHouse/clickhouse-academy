@@ -28,6 +28,9 @@ partial_taxi_df = pd.DataFrame(data)
 -- Step 3
 
 import chdb
+    
+parquet_path = "./taxi_trips.parquet"
+s3_path = "s3://learn-clickhouse/nyc-taxi/trips0.tsv.gz"
 
 taxi_query = """
 WITH 
@@ -36,7 +39,7 @@ WITH
     ),
 
     s3_data AS (
-        SELECT * FROM s3('s3://learn-clickhouse/nyc-taxi/trips0.tsv.gz')
+        SELECT * FROM s3('{s3_path}')
     ),
 
     df_data AS (
@@ -46,11 +49,12 @@ WITH
 
 SELECT * 
 FROM parquet_data
-FULL JOIN s3_data ON parquet_data.id = s3_data.id
-FULL JOIN df_data ON df_data.id = COALESCE(parquet_data.id, s3_data.id)
+FULL JOIN s3_data ON parquet_data.trip_id = s3_data.trip_id
+FULL JOIN df_data ON df_data.trip_id = COALESCE(parquet_data.trip_id, s3_data.trip_id)
 """.format(parquet_path=parquet_path, s3_path=s3_path)
 
-result = chdb.query(taxi_query, tables={"df": df}, as_pandas=True)
+
+result = chdb.query(taxi_query, output_format="DataFrame")
 
 print(result.head(5))
 
