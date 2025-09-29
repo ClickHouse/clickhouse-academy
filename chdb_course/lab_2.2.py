@@ -1,5 +1,5 @@
 -- Step 2:
-arrow_table = pq.read_table("./2024-04-01_performance_mobile_tiles.parquet"
+arrow_table = pq.read_table("./2024-04-01_performance_mobile_tiles.parquet")
 
 -- Step 3:
 chdb.query("""
