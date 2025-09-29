@@ -54,7 +54,7 @@ FULL JOIN df_data ON df_data.trip_id = COALESCE(parquet_data.trip_id, s3_data.tr
 """.format(parquet_path=parquet_path, s3_path=s3_path)
 
 
-result = chdb.query(taxi_query, output_format="DataFrame")
+taxi_df = chdb.query(taxi_query, output_format="DataFrame")
 
 print(result.head(5))
 
