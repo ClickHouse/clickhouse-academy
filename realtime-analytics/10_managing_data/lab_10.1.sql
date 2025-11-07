@@ -20,6 +20,7 @@ GROUP BY column;
 --Step 4:
 CREATE TABLE prices_1
 (
+    `id`    UUID,
     `price` UInt32,
     `date` Date,
     `postcode1` LowCardinality(String) ,

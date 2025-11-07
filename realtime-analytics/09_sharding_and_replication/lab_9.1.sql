@@ -35,7 +35,8 @@ LIMIT 20;
 
 --Step 5:
 SELECT
-    query
+    query,
+    tables
 FROM clusterAllReplicas(default, system.query_log)
 WHERE has(tables, 'default.uk_prices_3');
 
