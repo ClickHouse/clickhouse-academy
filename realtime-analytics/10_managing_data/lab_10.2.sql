@@ -13,12 +13,15 @@ INSERT INTO ttl_demo VALUES
     (1, 'row1', now()),
     (2, 'row2', now());
 
---Step 2:
+--Step 3:
 SELECT * FROM ttl_demo;
 
 --Step 5:
 ALTER TABLE ttl_demo
 MATERIALIZE TTL;
+
+--Step 6:
+SELECT * FROM ttl_demo;
 
 --Step 7:
 ALTER TABLE ttl_demo
@@ -35,6 +38,10 @@ MATERIALIZE TTL;
 
 --Step 10:
 SELECT * FROM ttl_demo;
+
+--Step 11:
+ALTER TABLE ttl_demo
+MATERIALIZE TTL;
 
 --Step 12:
 ALTER TABLE prices_1
