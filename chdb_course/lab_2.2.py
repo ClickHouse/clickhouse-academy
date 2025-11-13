@@ -1,4 +1,6 @@
 -- Step 2:
+import pyarrow.parquet as pq
+import chdb
 arrow_table = pq.read_table("./2024-04-01_performance_mobile_tiles.parquet")
 
 -- Step 3:
