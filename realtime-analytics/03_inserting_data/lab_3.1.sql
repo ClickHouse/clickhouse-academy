@@ -36,7 +36,7 @@ CREATE TABLE weather
         `1` Float64,
         `2` Float64),
     `elevation` Float32,
-    `name` LowCardinality(String)
+    `name` String
 )
 ENGINE = MergeTree
 PRIMARY KEY date;
