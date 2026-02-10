@@ -60,7 +60,7 @@ SELECT
     creation_date,
     bounty_amount
     1
-FROM postgresql('3.111.115.15', 'stackexchange', 'votes', 'stack_readonly_user', 'clickhouse');
+FROM sources.votes;
 
 
 -- Step 7
