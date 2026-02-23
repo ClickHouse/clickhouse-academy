@@ -2,21 +2,20 @@
 CREATE MATERIALIZED VIEW bronze.stg_badges_validator TO bronze.stg_badges
 AS
 SELECT 
-badge_id,
+id AS badge_id,
 user_id,
-badge_name,
-badge_awarded_at,
-badge_class,
-tag_based,
-load_timestamp
+name AS badge_name,
+date AS badge_awarded_at,
+class AS badge_class,
+tag_based
 FROM sources.badges
 WHERE
-badge_id > 0
+id > 0
 AND user_id > 0
-AND badge_name != ''
-AND badge_awarded_at >= '2008-01-01 00:00:00'  -- Stack Exchange founded in 2008
-AND badge_awarded_at <= now()
-AND badge_class IN (1, 2, 3);  -- Gold=1, Silver=2, Bronze=3
+AND name != ''
+AND date >= '2008-01-01 00:00:00'  -- Stack Exchange founded in 2008
+AND date <= now()
+AND class IN (1, 2, 3);  -- Gold=1, Silver=2, Bronze=3
 
 -- Step 2
 CREATE OR REPLACE TABLE bronze.stg_badges_invalid
