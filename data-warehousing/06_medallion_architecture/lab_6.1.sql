@@ -4,35 +4,33 @@ CREATE DATABASE IF NOT EXISTS silver;
 CREATE DATABASE IF NOT EXISTS gold;
 
 -- Step 2
-CREATE OR REPLACE TABLE bronze.stg_post_types
+CREATE OR REPLACE DICTIONARY bronze.stg_post_types
 (
-  post_type_id UInt16,
-  post_type_name LowCardinality(String)
+    post_type_id  UInt16,
+    post_type_name String
 )
-ENGINE = MergeTree()
-ORDER BY post_type_id;
+PRIMARY KEY post_type_id
+SOURCE(HTTP(
+    url    'https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/post_types.csv'
+    format 'CSVWithNames'
+))
+LAYOUT(FLAT())
+LIFETIME(3600);
 
 
-INSERT INTO bronze.stg_post_types
-SELECT
-  id AS post_type_id,
-  name AS post_type_name
-FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/post_types.csv', 'CSVWithNames');
-
-CREATE OR REPLACE TABLE bronze.stg_vote_types
+CREATE OR REPLACE DICTIONARY bronze.stg_vote_types
 (
-  vote_type_id UInt16,
-  vote_type_name LowCardinality(String)
+    vote_type_id  UInt16,
+    vote_type_name String
 )
-ENGINE = MergeTree()
-ORDER BY vote_type_id;
+PRIMARY KEY vote_type_id
+SOURCE(HTTP(
+    url    'https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/vote_types.csv'
+    format 'CSVWithNames'
+))
+LAYOUT(FLAT())
+LIFETIME(3600);
 
-
-INSERT INTO bronze.stg_vote_types
-SELECT
-  id AS vote_type_id,
-  name AS vote_type_name
-FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/vote_types.csv', 'CSVWithNames');
 
 
 -- Step 3

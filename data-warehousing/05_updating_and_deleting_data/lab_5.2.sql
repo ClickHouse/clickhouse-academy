@@ -65,8 +65,9 @@ FROM sources.votes;
 
 -- Step 7
 INSERT INTO votes_rmt2 (id, post_id, vote_type, user_id, creation_date, bounty_amount, version) VALUES
-(275177253, 77885992, 3, 0, '2024-01-26 00:00:02', 10);
-(275177253, 77885992, 3, 0, '2024-01-26 00:00:04', 5);
+(275177253, 77885992, '3', 0, '2024-01-26 00:00:02', 10, 1),
+(275177253, 77885992, '3', 0, '2024-01-26 00:00:04', 5, 1);
+
 
 
 -- Step 8
@@ -74,6 +75,6 @@ SELECT * FROM votes_rmt2 FINAL WHERE id = 275177253;
 
 
 -- Step 9
-OPTIMIZE TABLE rates_monthly2 FINAL;
+OPTIMIZE TABLE votes_rmt2 FINAL;
 SELECT * votes_rmt2 FINAL WHERE id = 275177253;
 

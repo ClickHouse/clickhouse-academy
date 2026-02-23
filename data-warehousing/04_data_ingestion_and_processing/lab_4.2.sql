@@ -76,7 +76,7 @@ SELECT count() FROM posts;
 SELECT 
    count() AS num_posts,
    avg(score) AS avg_score
-FROM posts_by_month_dest
+FROM posts_by_month
 WHERE toYYYYMM(creation_date) = 202401;
 -- Only 104,922 rows were scanned. You should notice that only January’s partition was scanned.
 
@@ -114,7 +114,7 @@ SELECT
    title,
    score,
    view_count
-FROM posts_by_month_dest
+FROM posts_by_month
 WHERE toYYYYMM(creation_date) = 202404
 ORDER BY creation_date;
 
