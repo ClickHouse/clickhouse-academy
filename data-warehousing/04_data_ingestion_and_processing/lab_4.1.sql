@@ -152,19 +152,18 @@ SELECT
 FROM icebergS3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/iceberg-tables/votes/', NOSIGN);
 
 
-
 INSERT INTO post_types
 SELECT 
-    id,
-    name
-FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/post_types.csv');
+    Id,
+    Name
+FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/post_types.csv', 'CSVWithNames');
 
 
 INSERT INTO vote_types
 SELECT 
-    id,
-    name
-FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/vote_types.csv');;
+    Id,
+    Name
+FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/vote_types.csv', 'CSVWithNames');
 
 
 -- Step 4
