@@ -6,8 +6,8 @@ CREATE DATABASE IF NOT EXISTS gold;
 -- Step 2
 CREATE OR REPLACE DICTIONARY bronze.stg_post_types
 (
-    post_type_id  UInt16,
-    post_type_name String
+    post_type_id   UInt64,   
+    post_type_name String    
 )
 PRIMARY KEY post_type_id
 SOURCE(HTTP(
@@ -20,8 +20,8 @@ LIFETIME(3600);
 
 CREATE OR REPLACE DICTIONARY bronze.stg_vote_types
 (
-    vote_type_id  UInt16,
-    vote_type_name String
+    vote_type_id   UInt64,  
+    vote_type_name String   
 )
 PRIMARY KEY vote_type_id
 SOURCE(HTTP(
