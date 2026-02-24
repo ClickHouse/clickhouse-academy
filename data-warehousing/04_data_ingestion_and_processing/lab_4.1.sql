@@ -83,18 +83,18 @@ ENGINE = MergeTree
 PRIMARY KEY (vote_type, post_id, creation_date);
 
 CREATE  OR REPLACE TABLE post_types (
-  id Int16,
-  name String
+  post_type_id Int16,
+  post_type_name String
 )
 ENGINE = MergeTree
-PRIMARY KEY id;
+PRIMARY KEY post_type_id;
 
 CREATE  OR REPLACE TABLE vote_types (
-  id Int16,
-  name String
+  vote_type_id Int16,
+  vote_type_name String
 )
 ENGINE = MergeTree
-PRIMARY KEY name;
+PRIMARY KEY vote_type_id;
 
 
 -- Step 3
@@ -154,15 +154,15 @@ FROM icebergS3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/iceberg-tabl
 
 INSERT INTO post_types
 SELECT 
-    Id,
-    Name
+    post_type_id,
+    post_type_name
 FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/post_types.csv', 'CSVWithNames');
 
 
 INSERT INTO vote_types
 SELECT 
-    Id,
-    Name
+    vote_type_id,
+    vote_type_name
 FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/vote_types.csv', 'CSVWithNames');
 
 
