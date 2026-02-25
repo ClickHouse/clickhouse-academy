@@ -162,8 +162,7 @@ CREATE OR REPLACE TABLE silver.int_users
   processing_timestamp DateTime DEFAULT now()
 )
 ENGINE = ReplacingMergeTree
-ORDER BY (user_id, created_at)
-PARTITION BY toYYYYMM(created_at);
+ORDER BY (user_id, created_at);
 
 
 
