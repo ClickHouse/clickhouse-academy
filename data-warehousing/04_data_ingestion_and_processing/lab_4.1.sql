@@ -139,7 +139,7 @@ SELECT
     up_votes,
     down_votes,
     account_id	
-s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/users.parquet', 'Parquet');
+FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/users.parquet', 'Parquet');
 
 INSERT INTO votes
 SELECT 
