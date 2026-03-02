@@ -1,0 +1,39 @@
+# Step 1
+git clone https://github.com/danny-avila/LibreChat.git
+
+# Step 2
+cd LibreChat
+
+# Step 3
+cp .env.example .env
+
+# Step 5
+services:
+  api:
+    volumes:
+      - ./librechat.yaml:/app/librechat.yaml
+  mcp-clickhouse:
+    image: mcp/clickhouse
+    container_name: mcp-clickhouse
+    ports:
+      - 8001:8000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - CLICKHOUSE_HOST=<clickhouse-host>
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=<clickhouse-password>
+      - CLICKHOUSE_MCP_SERVER_TRANSPORT=sse
+      - CLICKHOUSE_MCP_BIND_HOST=0.0.0.0
+
+# Step 6
+cp librechat.example.yaml librechat.yaml
+
+# Step 7
+mcpServers:
+  clickhouse:
+    type: sse
+    url: http://host.docker.internal:8001/sse
+
+# Step 10
+docker compose up

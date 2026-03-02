@@ -1,0 +1,19 @@
+# Step 2
+git clone --depth=1  https://github.com/apache/superset.git
+cd superset
+
+# Step 3
+echo "clickhouse-connect" >> ./docker/requirements-local.txt
+
+# Step 4
+export TAG=3.1.1
+docker compose -f docker-compose-image-tag.yml up
+
+# Step 5
+SUPERSET_ID=$(docker ps -aqf "name=superset_app")
+docker exec -it ${SUPERSET_ID} superset fab create-admin \
+  --username admin --firstname Superset --lastname Admin \
+  --email admin@superset.com --password admin
+docker exec -it ${SUPERSET_ID}  superset db upgrade
+docker exec -it ${SUPERSET_ID}  superset init
+

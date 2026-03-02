@@ -52,23 +52,23 @@ ORDER BY (project, date, version);
 -- Step 6
 INSERT INTO pypi
 SELECT
-    toDate(timestamp) AS date,
-    country_code,
-    project,
-    file.type AS type,
-    installer.name AS installer,
-    substring(python, 1, position(python, '.', position(python, '.') + 1) - 1) AS python_minor,
-    implementation.name AS system,
-    file.version AS version
+    toDate(TIMESTAMP) AS date,
+    COUNTRY_CODE AS country_code,
+    PROJECT AS project,
+    JSONExtractString(FILE, 'type') AS type,
+    JSONExtractString(INSTALLER, 'name') AS installer,
+    substring(PYTHON, 1, position(PYTHON, '.', position(PYTHON, '.') + 1) - 1) AS python_minor,
+    JSONExtractString(IMPLEMENTATION, 'name') AS system,
+    JSONExtractString(FILE, 'version') AS version
 FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/pypi/2023/pypi_0_0_{0..5}.snappy.parquet');
 
 
 -- Step 7
 SELECT
-   PROJECT,
+   project,
    count()
 FROM pypi
-GROUP BY PROJECT
+GROUP BY project
 ORDER BY 2 DESC;
 
 

@@ -72,6 +72,7 @@ FROM users_good_partition
 WHERE toYYYYMM(creation_date) = 202102  -- February 2021
 GROUP BY location
 ORDER BY user_count DESC;
+--The query that filters by your partition key will not result in a full table scan.
 
 
 -- Step 6
@@ -82,6 +83,7 @@ creation_date,
 location
 FROM users_good_partition
 WHERE user_id = 1200177;
+--This query results in a full table scan
 
 
 

@@ -1,0 +1,20 @@
+# Step 1
+What data do I have?
+
+# Step 2
+Who are the highest reputation users?
+
+# Step 3
+What can you tell me about Stack Exchange posts?
+
+# Step 4
+What seem to be the most controversial tags?
+
+# Step 5
+Use the gold.dim_user_activity_marketing table to list the locations with the most active users.
+
+# Step 6
+If reputation and number of questions answered are correlated, why are there so many users who have answered a lot of questions who have low or no reputation?
+
+# Step 7
+What is my cluster health?
