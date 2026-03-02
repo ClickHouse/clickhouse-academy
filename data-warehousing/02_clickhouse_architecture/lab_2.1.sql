@@ -36,26 +36,27 @@ WHERE table = 'badges' AND active = 1;
 -- Step 7
 SELECT *
 FROM badges
-WHERE class = 'Bronze';
+WHERE id = 7959927;
 
 --Step 8
 SELECT *
 FROM badges
-WHERE toYYYYMM(date) = '202202';
+WHERE toYYYYMM(date) = '202202'
+AND name = 'Announcer';
 -- ANSWER: Your results may vary slightly, but if your query processed 81,920 rows, notice that is exactly 8192 x 10, so 10 granules.
 
   
 -- Step 9
 CREATE TABLE badges_bad_primary_key (
-    id UInt32,
-    user_id Int32,
-    name LowCardinality(String),
-    date DateTime,
-    class Enum('Gold' = 1, 'Silver' = 2, 'Bronze' = 3),
-    tag_based Bool
+    id UInt32,
+    user_id Int32,
+    name LowCardinality(String),
+    date DateTime,
+    class Enum('Gold' = 1, 'Silver' = 2, 'Bronze' = 3),
+    tag_based Bool
 )
 ENGINE = MergeTree
-PRIMARY KEY (name, user_id, date);
+PRIMARY KEY (id);
 
 
 -- Step 10
