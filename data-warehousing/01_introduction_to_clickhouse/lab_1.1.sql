@@ -2,7 +2,7 @@
 DESCRIBE TABLE s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/badges.parquet', 'Parquet');
 
 -- Step 9
-SELECT * FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/badges.parquet', 'Parquet'); LIMIT 100;
+SELECT * FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/badges.parquet', 'Parquet'); 
 
 -- Step 10
 CREATE TABLE uk_prices
