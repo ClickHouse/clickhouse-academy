@@ -87,8 +87,8 @@ CREATE OR REPLACE TABLE bronze.stg_posts
   community_owned_at DateTime,
   load_timestamp DateTime DEFAULT now()
 )
-ENGINE = ReplacingMergeTree
-ORDER BY (post_id)
+ENGINE = MergeTree
+ORDER BY (post_created_at)
 PARTITION BY toYYYYMM(post_created_at);
 
 INSERT INTO bronze.stg_posts
@@ -130,10 +130,9 @@ CREATE OR REPLACE TABLE bronze.stg_votes
   bounty_amount Nullable(UInt16),
   load_timestamp DateTime DEFAULT now()
 )
-ENGINE = ReplacingMergeTree
-ORDER BY (post_id, vote_id)
+ENGINE = MergeTree
+ORDER BY (vote_type_id, voted_at)
 PARTITION BY toYYYYMM(voted_at);
-
 
 INSERT INTO bronze.stg_votes
 SELECT 
@@ -164,9 +163,8 @@ CREATE OR REPLACE TABLE bronze.stg_users
   account_id Int64,
   load_timestamp DateTime DEFAULT now()
 )
-ENGINE = ReplacingMergeTree
-ORDER BY (user_id, load_timestamp)
-PARTITION BY toYYYYMM(load_timestamp);
+ENGINE = MergeTree
+ORDER BY (created_at, last_access_at);
 
 
 INSERT INTO bronze.stg_users

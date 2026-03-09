@@ -12,7 +12,7 @@ tag_based UInt8,
 processing_timestamp DateTime DEFAULT now()
 )
 ENGINE = MergeTree()
-ORDER BY (badge_id, user_id, badge_awarded_at)
+ORDER BY (badge_awarded_at, badge_class)
 PARTITION BY toYYYYMM(badge_awarded_at);
 
 CREATE MATERIALIZED VIEW silver.int_badges_mv
@@ -33,6 +33,7 @@ END AS class_name,
 tag_based,
 now() AS processing_timestamp
 FROM bronze.stg_badges;
+
 
 
 -- Step 2
@@ -71,6 +72,7 @@ LEFT JOIN bronze.stg_vote_types vt ON v.vote_type_id = vt.vote_type_id
 SETTINGS join_algorithm = 'direct';
 
 
+
 -- Step 3
 CREATE OR REPLACE TABLE silver.int_posts
 (
@@ -102,8 +104,8 @@ CREATE OR REPLACE TABLE silver.int_posts
   is_deleted UInt8,                
   processing_timestamp DateTime DEFAULT now(),
 )
-ENGINE = MergeTree
-ORDER BY (post_created_at, post_id)
+ENGINE = ReplacingMergeTree
+ORDER BY (post_id)
 PARTITION BY toYYYYMM(post_created_at);
 
 
@@ -274,3 +276,4 @@ SELECT
     now() AS processing_timestamp
 FROM bronze.stg_users 
 WHERE user_id > 0;  -- Filter out invalid users (Community user is -1)
+

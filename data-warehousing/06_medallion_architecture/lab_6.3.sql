@@ -18,7 +18,7 @@ CREATE OR REPLACE TABLE gold.fct_activity_by_time
     avg_views_per_question Float32,
     updated_at DateTime DEFAULT now()
 )
-ENGINE = ReplacingMergeTree
+ENGINE = MergeTree
 ORDER BY activity_date;
 
 
@@ -128,7 +128,7 @@ CREATE TABLE gold.dim_user_activity_marketing (
   is_power_user UInt8,
   last_refreshed DateTime DEFAULT now()
 )
-ENGINE = ReplacingMergeTree()
+ENGINE = MergeTree
 ORDER BY (user_created_at, is_active_user, is_power_user, user_id)  
 PARTITION BY toYYYYMM(user_created_at);
 
@@ -163,7 +163,7 @@ CREATE TABLE gold.dim_user_activity_mods (
   is_power_user UInt8,
   last_refreshed DateTime DEFAULT now()
 )
-ENGINE = ReplacingMergeTree()
+ENGINE = MergeTree
 ORDER BY (reputation, downvotes_received, user_id)  
 PARTITION BY toYYYYMM(user_created_at);
 
@@ -198,7 +198,7 @@ CREATE TABLE gold.dim_user_activity_customer_success (
   is_power_user UInt8,
   last_refreshed DateTime DEFAULT now()
 )
-ENGINE = ReplacingMergeTree()
+ENGINE = MergeTree
 ORDER BY (user_id)  
 PARTITION BY toYYYYMM(user_created_at);
 
@@ -404,7 +404,7 @@ is_trending UInt8,
 
 updated_at DateTime DEFAULT now()
 )
-ENGINE = ReplacingMergeTree(updated_at)
+ENGINE = MergeTree
 ORDER BY (total_questions, tag_name);
 
 
@@ -484,7 +484,7 @@ CREATE OR REPLACE TABLE gold.fact_post_performance
     
     updated_at DateTime DEFAULT now()
 )
-ENGINE = ReplacingMergeTree(updated_at)
+ENGINE = MergeTree
 ORDER BY (created_at, performance_tier, post_id);
 
 
@@ -576,7 +576,7 @@ CREATE OR REPLACE TABLE gold.fact_badge_awards
     
     updated_at DateTime DEFAULT now()
 )
-ENGINE = ReplacingMergeTree(updated_at)
+ENGINE = MergeTree
 ORDER BY (badge_class, total_awards, badge_name);
 
 -- Refreshable materialized view with JOIN instead of correlated subqueries
