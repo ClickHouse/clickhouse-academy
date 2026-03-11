@@ -26,6 +26,57 @@ DESCRIBE s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/
 
 
 -- Step 2
+SELECT
+	uniq(name)
+FROM badges;
+
+SELECT max(id) FROM badges;
+SELECT max(user_id) FROM badges;
+
+CREATE TABLE badges_good_data_types (
+    id UInt32,
+    user_id Int32,
+    name LowCardinality(String),
+    date DateTime,
+    class Enum('Gold' = 1, 'Silver' = 2, 'Bronze' = 3),
+    tag_based Bool
+)
+ENGINE = MergeTree
+PRIMARY KEY (name, user_id, date);
+
+INSERT INTO badges_good_data_types
+SELECT * FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/badges.parquet', 'Parquet');
+
+
+SELECT
+    table,
+    formatReadableSize(sum(data_compressed_bytes)) AS compressed_size,
+    formatReadableSize(sum(data_uncompressed_bytes)) AS uncompressed_size
+FROM system.parts
+WHERE table ilike 'badges%' AND active = 1
+GROUP BY table
+ORDER BY table;
+
+
+DROP TABLE badges_good_data_types;
+DROP TABLE badges;
+
+CREATE TABLE badges (
+    id UInt32,
+    user_id Int32,
+    name LowCardinality(String),
+    date DateTime,
+    class Enum('Gold' = 1, 'Silver' = 2, 'Bronze' = 3),
+    tag_based Bool
+)
+ENGINE = MergeTree
+PRIMARY KEY (name, user_id, date);
+
+INSERT INTO badges
+SELECT * FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/badges.parquet', 'Parquet');
+
+
+-- Step 3
 CREATE OR REPLACE TABLE posts (
     id Int32,
     post_type_id UInt8,
@@ -97,7 +148,7 @@ ENGINE = MergeTree
 PRIMARY KEY vote_type_id;
 
 
--- Step 3
+-- Step 4
 INSERT INTO posts
 SELECT 
     id,
@@ -166,7 +217,7 @@ SELECT
 FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/stack-exchange/vote_types.csv', 'CSVWithNames');
 
 
--- Step 4
+-- Step 5
 INSERT INTO posts (
     id,
     post_type_id,
