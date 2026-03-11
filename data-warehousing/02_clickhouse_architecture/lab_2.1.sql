@@ -3,9 +3,9 @@ CREATE DATABASE SOURCES;
 
 -- Step 2
 CREATE TABLE badges (
-    id UInt32,
-    user_id Int32,
-    name LowCardinality(String),
+    id UInt128,
+    user_id Int128,
+    name String,
     date DateTime,
     class Enum('Gold' = 1, 'Silver' = 2, 'Bronze' = 3),
     tag_based Bool
