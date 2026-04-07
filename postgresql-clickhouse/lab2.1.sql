@@ -44,6 +44,7 @@ GROUP BY day;
 -- Step 7
 RENAME TABLE badges TO inferred_schema_badges;
 
+-- Step 8
 CREATE TABLE badges (
     id UInt32,
     user_id Int32,
@@ -55,17 +56,17 @@ CREATE TABLE badges (
 ENGINE = MergeTree
 PRIMARY KEY (name, user_id, date);
 
--- Step 8
+-- Step 9
 INSERT INTO badges
 SELECT * FROM inferred_schema_badges;
 
--- Step 9
+-- Step 10
 SELECT count() FROM badges;
 
--- Step 10
+-- Step 11
 SELECT * FROM badges LIMIT 1000;
 
--- Step 11
+-- Step 12
 
 -- posts
 
