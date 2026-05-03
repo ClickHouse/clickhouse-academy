@@ -9,7 +9,7 @@ SELECT count()
 FROM uk_prices_3
 WHERE
     price > 1_000_000
-    AND date >= toDate('2024-01-01') AND date <= toDate('2024-12-31');
+    AND toYear(date) = '2024';
 
 --Step 3:
 SELECT uniqExact(town)
@@ -67,7 +67,7 @@ FROM uk_prices_3
 WHERE
     county IN ['AVON','ESSEX','DEVON','KENT','CORNWALL']
     AND
-    date >= toDate('2024-01-01') AND date <= toDate('2024-12-31');
+    toYear(date) = '2024';
 
 
 --Step 10:
@@ -76,7 +76,7 @@ SELECT
     avg(price) AS avg_price
 FROM uk_prices_3
 WHERE
-    date >= toDate('2005-01-01') AND date <= toDate('2010-12-31')
+    toYear(month) BETWEEN '2005' AND '2010'
 GROUP BY month
 ORDER BY month ASC;
 
@@ -87,7 +87,7 @@ SELECT
 FROM uk_prices_3
 WHERE
     town = 'LIVERPOOL'
-    AND date >= toDate('2020-01-01') AND date <= toDate('2020-12-31')
+    AND toYear(date) = 2020
 GROUP BY day
 ORDER BY day ASC;
 
