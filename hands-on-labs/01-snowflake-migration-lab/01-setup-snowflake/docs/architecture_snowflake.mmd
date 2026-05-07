@@ -1,0 +1,55 @@
+%%{init: {"theme": "base", "themeVariables": {"fontSize": "14px"}}}%%
+flowchart TB
+    GEN["Synthetic Generator<br/>50 M rows · TABLE(GENERATOR)<br/>scripts/02_seed_data.sql · one-time"]
+    PRD["Trip Producer<br/>~60 trips / min · Docker<br/>LOADER_ROLE · INSERT on RAW only"]
+
+    subgraph SF ["  Snowflake — NYC_TAXI_DB  "]
+        direction TB
+
+        subgraph RAW_SCHEMA ["RAW Schema · TRANSFORM_WH"]
+            direction LR
+            TRIPS_RAW[["TRIPS_RAW<br/>50 M rows<br/>VARIANT: TRIP_METADATA<br/>(driver · app · route JSON)"]]
+            CDC_STREAM[["TRIPS_CDC_STREAM<br/>Change Data Capture<br/>append_only = false"]]
+            CDC_TASK(["CDC_CONSUME_TASK<br/>CRON every 5 min<br/>SELECT from stream"])
+        end
+
+        DBT(["dbt-snowflake<br/>RAW → STAGING → ANALYTICS<br/>runs on TRANSFORM_WH"])
+
+        subgraph STAGING_SCHEMA ["STAGING Schema · dbt views"]
+            direction LR
+            STG_TRIPS["stg_trips<br/>type-cast · LATERAL FLATTEN VARIANT<br/>filter nulls"]
+            STG_ZONES["stg_taxi_zones<br/>265 NYC zones · COALESCE nulls"]
+            INT_TRIPS["int_trips_enriched<br/>ephemeral CTE<br/>all dimension joins"]
+        end
+
+        subgraph ANALYTICS_SCHEMA ["ANALYTICS Schema · ANALYTICS_WH"]
+            direction LR
+            FACT[["FACT_TRIPS<br/>50 M rows<br/>MERGE incremental on trip_id"]]
+            DIMS[["DIM_TAXI_ZONES · DIM_DATE<br/>DIM_VENDOR · DIM_PAYMENT_TYPE"]]
+            AGG[["AGG_HOURLY_ZONE_TRIPS<br/>~2 M rows<br/>MERGE on (hour_bucket, zone_id)"]]
+            HOURLY_TASK(["HOURLY_AGG_TASK<br/>CRON every hour<br/>MERGE into AGG"])
+        end
+    end
+
+    GEN          --> TRIPS_RAW
+    PRD          --> TRIPS_RAW
+    TRIPS_RAW    --> CDC_STREAM --> CDC_TASK
+    TRIPS_RAW    -->|"dbt source"| DBT
+    DBT          --> STG_TRIPS & STG_ZONES
+    STG_TRIPS    --> INT_TRIPS
+    STG_ZONES    --> INT_TRIPS
+    INT_TRIPS    -->|"MERGE incremental"| FACT
+    INT_TRIPS    -->|"full refresh"| DIMS
+    HOURLY_TASK  --> AGG
+
+    classDef source   fill:#48C78E,color:#fff,stroke:#2ea06a,stroke-width:2px
+    classDef sfTable  fill:#29B5E8,color:#fff,stroke:#1a8bb8,stroke-width:2px
+    classDef sfStream fill:#0072B8,color:#fff,stroke:#005a93,stroke-width:2px
+    classDef sfTask   fill:#29B5E8,color:#fff,stroke:#1a8bb8,stroke-width:1px,stroke-dasharray:4 2
+    classDef dbt      fill:#FF8C00,color:#fff,stroke:#cc6600,stroke-width:2px
+
+    class GEN,PRD source
+    class TRIPS_RAW,FACT,DIMS,AGG sfTable
+    class CDC_STREAM sfStream
+    class CDC_TASK,HOURLY_TASK sfTask
+    class STG_TRIPS,STG_ZONES,INT_TRIPS,DBT dbt

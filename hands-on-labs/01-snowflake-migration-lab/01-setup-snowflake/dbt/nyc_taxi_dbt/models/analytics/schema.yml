@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: fact_trips
+    description: "Central fact table — one row per trip, fully denormalized star schema. 50M rows."
+    columns:
+      - name: trip_id
+        tests:
+          - not_null
+          - unique
+      - name: pickup_at
+        tests:
+          - not_null
+      - name: total_amount_usd
+        tests:
+          - not_null
+      - name: payment_type
+        tests:
+          - not_null
+      - name: pickup_borough
+        description: "Enriched from DIM_TAXI_ZONES join"
+
+  - name: dim_date
+    description: "Date spine 2009–2029 with fiscal quarters, day-of-week, and US federal holiday flags"
+    columns:
+      - name: date_day
+        tests:
+          - not_null
+          - unique
+
+  - name: agg_hourly_zone_trips
+    description: "Pre-aggregated hourly zone trip metrics. Updated every hour via MERGE. Primary migration challenge: no MERGE in ClickHouse."
+    columns:
+      - name: hour_bucket
+        tests:
+          - not_null
+      - name: zone_id
+        tests:
+          - not_null

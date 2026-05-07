@@ -1,0 +1,25 @@
+%%{init: {"theme": "base", "themeVariables": {"fontSize": "14px"}}}%%
+flowchart LR
+    subgraph SF_DATA ["  Snowflake · ANALYTICS_WH  "]
+        direction TB
+        FACT[["FACT_TRIPS<br/>50 M rows"]]
+        AGG[["AGG_HOURLY_ZONE_TRIPS<br/>~2 M rows"]]
+        TRIPS_RAW[["TRIPS_RAW<br/>(RAW Schema)<br/>VARIANT column"]]
+    end
+
+    subgraph SUPERSET ["  Apache Superset · localhost:8088  "]
+        direction TB
+        DASH1["Dashboard 1<br/>Operations Command Center<br/>auto-refresh every 15 min"]
+        DASH2["Dashboard 2<br/>Executive Weekly Report<br/>uses QUALIFY — migration target"]
+        DASH3["Dashboard 3<br/>Driver and Quality Analytics<br/>VARIANT access — slow query benchmark"]
+    end
+
+    FACT      --> DASH1 & DASH2 & DASH3
+    AGG       --> DASH1
+    TRIPS_RAW --> DASH3
+
+    classDef sfTable fill:#29B5E8,color:#fff,stroke:#1a8bb8,stroke-width:2px
+    classDef biDash  fill:#00BCD4,color:#fff,stroke:#0097a7,stroke-width:2px
+
+    class FACT,AGG,TRIPS_RAW sfTable
+    class DASH1,DASH2,DASH3 biDash

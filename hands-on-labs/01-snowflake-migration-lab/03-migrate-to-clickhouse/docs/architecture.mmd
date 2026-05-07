@@ -1,0 +1,48 @@
+%%{init: {"theme": "base", "themeVariables": {"fontSize": "16px"}}}%%
+flowchart LR
+    subgraph SRC ["  Data Sources  "]
+        direction TB
+        PRD_SF["Trip Producer<br/>pre-cutover · Docker"]
+        PRD_CH["Trip Producer<br/>post-cutover · Docker"]
+    end
+
+    subgraph SF ["  Snowflake (Part 1)  "]
+        direction TB
+        SF_NOTE["NYC_TAXI_DB<br/>RAW · ANALYTICS<br/>dbt pipeline · CDC stream"]
+    end
+
+    subgraph BRIDGE ["  Migration  "]
+        direction TB
+        CP_NOTE["Python Script (bulk load)<br/>+<br/>Producer Cutover (live writes)"]
+    end
+
+    subgraph CH ["  ClickHouse Cloud  "]
+        direction TB
+        CH_NOTE["default + analytics databases<br/>MergeTree family · dbt pipeline<br/>dictionary · refreshable MVs"]
+    end
+
+    subgraph BI ["  Apache Superset  "]
+        direction TB
+        BI_NOTE["7 Dashboards<br/>3 Snowflake · 4 ClickHouse<br/>localhost:8088"]
+    end
+
+    PRD_SF  -->|"pre-cutover"| SF
+    SF      -->|"migration"| BRIDGE
+    BRIDGE  -->|"50 M rows + live writes"| CH
+    SF      -->|"SQL reads"| BI
+    CH      -->|"SQL reads"| BI
+    PRD_CH  -.->|"post-cutover"| CH
+
+    classDef srcNode    fill:#48C78E,color:#fff,stroke:#2ea06a,stroke-width:2px
+    classDef srcDashed  fill:#48C78E,color:#fff,stroke:#2ea06a,stroke-width:2px,stroke-dasharray:5 3
+    classDef sfNode     fill:#29B5E8,color:#fff,stroke:#1a8bb8,stroke-width:2px
+    classDef bridgeNode fill:#48C78E,color:#fff,stroke:#2ea06a,stroke-width:2px
+    classDef chNode     fill:#E03C3C,color:#fff,stroke:#b52d2d,stroke-width:2px
+    classDef biNode     fill:#00BCD4,color:#fff,stroke:#0097a7,stroke-width:2px
+
+    class PRD_SF srcNode
+    class PRD_CH srcDashed
+    class SF_NOTE sfNode
+    class CP_NOTE bridgeNode
+    class CH_NOTE chNode
+    class BI_NOTE biNode

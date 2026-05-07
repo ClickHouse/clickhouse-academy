@@ -1,0 +1,145 @@
+version: 2
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Migration note: All dbt_expectations tests from Part 1 have been removed.
+# dbt_expectations is not compatible with the dbt-clickhouse adapter.
+# Range/value tests are covered by:
+#   - Custom SQL tests: tests/assert_revenue_positive.sql, tests/assert_trips_not_future.sql
+#   - Native dbt tests: not_null, unique, accepted_values
+# ──────────────────────────────────────────────────────────────────────────────
+
+models:
+  - name: fact_trips
+    description: >
+      Central fact table — one row per trip, fully denormalized star schema.
+      ~50M rows. Incremental model using ReplacingMergeTree(updated_at) engine.
+      Migration note: Snowflake used MERGE INTO (incremental_strategy='merge').
+      ClickHouse uses ReplacingMergeTree + delete_insert strategy. Query with
+      SELECT ... FINAL to force deduplication at query time.
+    columns:
+      - name: trip_id
+        description: "UUID string — unique key for deduplication (ReplacingMergeTree)"
+        tests:
+          - not_null
+          - unique
+
+      - name: pickup_at
+        description: "Pickup DateTime — part of the order_by: toStartOfMonth(pickup_at) as coarse prefix, pickup_at for range scans, trip_id for RMT uniqueness"
+        tests:
+          - not_null
+
+      - name: total_amount_usd
+        description: "Total fare amount in USD — must be non-negative (see assert_revenue_positive)"
+        tests:
+          - not_null
+
+      - name: payment_type
+        description: "Payment type description (joined from dim_payment_type)"
+        tests:
+          - not_null
+
+      - name: pickup_borough
+        description: "Pickup borough name — joined from dim_taxi_zones via stg_taxi_zones"
+
+      - name: updated_at
+        description: >
+          Version column for ReplacingMergeTree. Set to now() on every insert.
+          Migration note: Not present in Snowflake fact_trips — added specifically
+          for ClickHouse deduplication semantics.
+
+  - name: agg_hourly_zone_trips
+    description: >
+      Pre-aggregated hourly zone trip metrics. Updated incrementally.
+      Migration note: Snowflake used MERGE INTO to update aggregate rows in place.
+      ClickHouse uses delete_insert + ReplacingMergeTree: delete stale hour/zone
+      aggregates then insert freshly computed ones.
+    columns:
+      - name: hour_bucket
+        description: >
+          Truncated to hour boundary.
+          Migration note: DATE_TRUNC('hour', pickup_at) → toStartOfHour(pickup_at)
+        tests:
+          - not_null
+
+      - name: zone_id
+        description: "TLC pickup location ID (part of composite unique key)"
+        tests:
+          - not_null
+
+      - name: trips
+        description: "Count of trips in this hour/zone bucket"
+        tests:
+          - not_null
+
+      - name: revenue
+        description: "Sum of total_amount_usd for this hour/zone bucket"
+
+      - name: avg_distance
+        description: "Average trip_distance_miles for this hour/zone bucket"
+
+      - name: updated_at
+        description: "Version column for ReplacingMergeTree — set to now() on each run"
+
+  - name: dim_date
+    description: >
+      Date dimension spanning 2009-01-01 to 2029-12-31. Includes fiscal quarters,
+      day-of-week, US federal holiday flags.
+      Migration note: Snowflake used dbt_utils.date_spine() macro for date generation.
+      ClickHouse uses numbers() table function: far simpler, no package dependency,
+      and generates all ~7670 rows in a single scan.
+    columns:
+      - name: date_day
+        description: "Calendar date (Date type in ClickHouse)"
+        tests:
+          - not_null
+          - unique
+
+      - name: fiscal_quarter
+        description: "Format FYyyQq e.g. FY23Q1 — same logic as Part 1, different concat syntax"
+
+      - name: is_weekend
+        description: "1 if Saturday or Sunday, 0 otherwise (UInt8 — ClickHouse has no BOOLEAN)"
+
+      - name: is_holiday
+        description: "1 if US federal holiday, 0 otherwise"
+
+  - name: dim_taxi_zones
+    description: >
+      NYC TLC taxi zone lookup — 265 zones across 5 boroughs.
+      Migration note: In Snowflake, data was seeded via 01_create_tables.sql.
+      In ClickHouse, seeded via scripts/00_seed_zones.sql and promoted through stg_taxi_zones.
+    columns:
+      - name: location_id
+        description: "TLC location ID (1–265)"
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_payment_type
+    description: >
+      Payment type lookup — 6 types (static seed data embedded in model).
+      Migration note: In Snowflake, seeded via SQL INSERT. In ClickHouse, embedded
+      as VALUES in the model SELECT since it is not part of any migrated raw table.
+    columns:
+      - name: payment_type_id
+        tests:
+          - not_null
+          - unique
+      - name: payment_code
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['CREDIT', 'CASH', 'NO_CHG', 'DISPUTE', 'UNKNOWN', 'VOIDED']
+
+  - name: dim_vendor
+    description: >
+      Vendor lookup — 3 NYC TLC registered taxi technology vendors (static).
+      Migration note: Same as dim_payment_type — embedded VALUES, no external seed.
+    columns:
+      - name: vendor_id
+        tests:
+          - not_null
+          - unique
+      - name: vendor_code
+        tests:
+          - not_null

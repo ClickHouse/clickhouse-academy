@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  superset:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nyc_taxi_superset
+    restart: unless-stopped
+    environment:
+      - SUPERSET_SECRET_KEY=${SUPERSET_SECRET_KEY:-change-me-in-production-32chars!!}
+      - PYTHONPATH=/app/pythonpath
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./superset_config.py:/app/pythonpath/superset_config.py
+      - superset_home:/app/superset_home
+      - ./dashboards:/app/dashboards
+    depends_on:
+      superset_db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8088/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    command: >
+      bash -c "
+        superset db upgrade &&
+        superset fab create-admin --username admin --firstname Admin --lastname User --email admin@example.com --password admin &&
+        superset init &&
+        gunicorn --bind 0.0.0.0:8088 --workers 4 --timeout 300 --limit-request-line 0 'superset.app:create_app()'
+      "
+
+  superset_init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nyc_taxi_superset_init
+    depends_on:
+      superset:
+        condition: service_healthy
+    environment:
+      - SUPERSET_URL=http://superset:8088
+      - SUPERSET_ADMIN_USER=admin
+      - SUPERSET_ADMIN_PASSWORD=admin
+      - SNOWFLAKE_ORG=${SNOWFLAKE_ORG}
+      - SNOWFLAKE_ACCOUNT=${SNOWFLAKE_ACCOUNT}
+      - SNOWFLAKE_USER=${SNOWFLAKE_USER}
+      - SNOWFLAKE_PASSWORD=${SNOWFLAKE_PASSWORD}
+      - CLICKHOUSE_HOST=${CLICKHOUSE_HOST:-}
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER:-default}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-}
+      - CLICKHOUSE_PORT=${CLICKHOUSE_PORT:-8443}
+    volumes:
+      - ./init_superset.sh:/app/init_superset.sh:ro
+      - ./dashboards:/app/dashboards:ro
+    entrypoint: ["bash", "/app/init_superset.sh"]
+    restart: on-failure
+
+  superset_db:
+    image: postgres:15-alpine
+    container_name: nyc_taxi_superset_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=superset
+      - POSTGRES_USER=superset
+      - POSTGRES_PASSWORD=${SUPERSET_DB_PASSWORD:-superset}
+    volumes:
+      - superset_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U superset"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  superset_cache:
+    image: redis:7-alpine
+    container_name: nyc_taxi_superset_cache
+    restart: unless-stopped
+
+  # ── Trip Producer ────────────────────────────────────────────────────────────
+  # Continuously inserts ~60 realistic fake trips/minute into TRIPS_RAW.
+  # Keeps the CDC stream live and the Operations dashboard non-static.
+  # Scale up with TRIPS_PER_MINUTE for load testing.
+  trip_producer:
+    build:
+      context: ../producer
+      dockerfile: Dockerfile
+    container_name: nyc_taxi_producer
+    restart: unless-stopped
+    environment:
+      # Snowflake account in ORG-ACCOUNT format (e.g. MYORG-MYACCOUNT)
+      - SNOWFLAKE_ACCOUNT=${SNOWFLAKE_ORG}-${SNOWFLAKE_ACCOUNT}
+      - SNOWFLAKE_USER=${SNOWFLAKE_USER}
+      - SNOWFLAKE_PASSWORD=${SNOWFLAKE_PASSWORD:-}
+      # Uncomment for key-pair auth (mount the key file as a volume below):
+      # - SNOWFLAKE_PRIVATE_KEY_PATH=/run/secrets/snowflake_key.p8
+      - SNOWFLAKE_ROLE=${PRODUCER_ROLE:-LOADER_ROLE}
+      - SNOWFLAKE_WAREHOUSE=${PRODUCER_WAREHOUSE:-TRANSFORM_WH}
+      - TRIPS_PER_MINUTE=${TRIPS_PER_MINUTE:-60}
+      - BATCH_INTERVAL_SECONDS=${BATCH_INTERVAL_SECONDS:-10}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    # volumes:
+    #   - ~/.ssh/snowflake_rsa_key.p8:/run/secrets/snowflake_key.p8:ro
+
+volumes:
+  superset_home:
+  superset_db_data:

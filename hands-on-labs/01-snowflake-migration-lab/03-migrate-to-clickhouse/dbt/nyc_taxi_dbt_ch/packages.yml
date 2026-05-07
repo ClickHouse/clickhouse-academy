@@ -1,0 +1,11 @@
+packages:
+  - package: dbt-labs/dbt_utils
+    version: [">=1.0.0", "<2.0.0"]
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Migration note: Part 1 (Snowflake) included dbt_expectations for column-value
+# range tests. dbt_expectations is NOT compatible with the dbt-clickhouse adapter
+# and has been intentionally omitted. Equivalent coverage is provided via:
+#   1. Native dbt tests (not_null, unique, accepted_values)
+#   2. Custom SQL tests in tests/ (assert_trips_not_future.sql, assert_revenue_positive.sql)
+# ──────────────────────────────────────────────────────────────────────────────

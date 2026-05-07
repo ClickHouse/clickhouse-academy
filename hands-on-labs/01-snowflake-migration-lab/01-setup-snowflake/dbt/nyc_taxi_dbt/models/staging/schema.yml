@@ -1,0 +1,44 @@
+version: 2
+
+models:
+  - name: stg_trips
+    description: "Cleaned and typed staging layer for NYC Taxi trip records. VARIANT column flattened to typed columns."
+    columns:
+      - name: trip_id
+        description: "UUID — primary key"
+        tests:
+          - not_null
+          - unique
+      - name: pickup_at
+        tests:
+          - not_null
+      - name: dropoff_at
+        tests:
+          - not_null
+      - name: total_amount_usd
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1000
+      - name: duration_minutes
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 600
+      - name: payment_type_id
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6]
+      - name: driver_rating
+        description: "Extracted from TRIP_METADATA VARIANT — null if metadata absent"
+      - name: surge_multiplier
+        description: "App surge pricing factor from VARIANT. 1.0 = no surge."
+
+  - name: stg_taxi_zones
+    description: "Cleaned taxi zone dimension from TLC lookup"
+    columns:
+      - name: location_id
+        tests:
+          - not_null
+          - unique

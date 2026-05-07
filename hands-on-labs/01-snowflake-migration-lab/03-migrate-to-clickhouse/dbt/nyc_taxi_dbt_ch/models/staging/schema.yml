@@ -1,0 +1,99 @@
+version: 2
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Migration note: Part 1 (Snowflake) used dbt_expectations for range tests:
+#   dbt_expectations.expect_column_values_to_be_between (min/max)
+# dbt_expectations is NOT compatible with the dbt-clickhouse adapter.
+# Equivalent coverage is provided by:
+#   - Native dbt tests: not_null, unique, accepted_values
+#   - Custom SQL tests: tests/assert_revenue_positive.sql
+# ──────────────────────────────────────────────────────────────────────────────
+
+models:
+  - name: stg_trips
+    description: >
+      Cleaned and typed staging layer for NYC Taxi trip records.
+      VARIANT/JSON metadata column flattened to typed columns using JSONExtract functions.
+      Migration note: replaces Snowflake colon-path VARIANT syntax with
+      JSONExtractFloat(), JSONExtractInt(), JSONExtractString().
+    columns:
+      - name: trip_id
+        description: "UUID string — primary key for deduplication"
+        tests:
+          - not_null
+          - unique
+
+      - name: pickup_at
+        description: "Pickup timestamp — DateTime in ClickHouse (TIMESTAMP_NTZ in Snowflake)"
+        tests:
+          - not_null
+
+      - name: dropoff_at
+        description: "Dropoff timestamp"
+        tests:
+          - not_null
+
+      - name: total_amount_usd
+        description: "Total fare including all components"
+        tests:
+          - not_null
+          # Migration note: Part 1 used dbt_expectations.expect_column_values_to_be_between
+          # (min_value: 0, max_value: 1000). Replaced by custom test assert_revenue_positive.sql
+
+      - name: duration_minutes
+        description: >
+          Trip duration in minutes.
+          Migration note: Derived via dateDiff('minute', pickup_at, dropoff_at)
+          — Snowflake equivalent was DATEDIFF('minute', PICKUP_DATETIME, DROPOFF_DATETIME).
+        # Migration note: Part 1 used dbt_expectations range test (min 1, max 600).
+        # Covered by WHERE dropoff_at > pickup_at filter in the model instead.
+
+      - name: payment_type_id
+        description: "Payment type code (1=Credit, 2=Cash, 3=No Charge, 4=Dispute, 5=Unknown, 6=Voided)"
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6]
+
+      - name: driver_rating
+        description: >
+          Driver rating extracted from trip_metadata JSON.
+          Migration note: In Snowflake — TRIP_METADATA:driver.rating::FLOAT
+          In ClickHouse — JSONExtractFloat(trip_metadata, 'driver', 'rating')
+
+      - name: surge_multiplier
+        description: >
+          App surge pricing factor from JSON metadata. 1.0 = no surge.
+          Migration note: In Snowflake — TRIP_METADATA:app.surge_multiplier::FLOAT
+          In ClickHouse — JSONExtractFloat(trip_metadata, 'app', 'surge_multiplier')
+
+      - name: vehicle_type
+        description: "Vehicle type string from JSON metadata (e.g. 'SUV', 'Sedan')"
+
+      - name: app_platform
+        description: "App platform from JSON metadata (e.g. 'iOS', 'Android')"
+
+      - name: traffic_level
+        description: "Traffic level from JSON metadata (e.g. 'light', 'moderate', 'heavy')"
+
+  - name: stg_taxi_zones
+    description: >
+      Cleaned taxi zone dimension from TLC lookup table.
+      Migration note: In Snowflake, source was NYC_TAXI_DB.ANALYTICS.DIM_TAXI_ZONES.
+      In ClickHouse, seeded via scripts/00_seed_zones.sql as source('raw', 'taxi_zones').
+    columns:
+      - name: location_id
+        description: "TLC location ID (1–265)"
+        tests:
+          - not_null
+          - unique
+
+      - name: borough
+        description: "NYC borough — defaults to 'Unknown' via coalesce()"
+        tests:
+          - not_null
+
+      - name: zone
+        description: "Named zone within borough — defaults to 'Unknown'"
+
+      - name: service_zone
+        description: "TLC service zone (Yellow Zone, Boro Zone, EWR) — defaults to 'Unknown'"

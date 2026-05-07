@@ -1,0 +1,31 @@
+name: 'nyc_taxi_dbt'
+version: '1.0.0'
+config-version: 2
+
+profile: 'nyc_taxi'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  nyc_taxi_dbt:
+    staging:
+      +schema: STAGING
+      +materialized: view
+    intermediate:
+      +schema: STAGING
+      +materialized: ephemeral
+    analytics:
+      +schema: ANALYTICS
+      +materialized: table
+      fact_trips:
+        +materialized: incremental
+      agg_hourly_zone_trips:
+        +materialized: incremental

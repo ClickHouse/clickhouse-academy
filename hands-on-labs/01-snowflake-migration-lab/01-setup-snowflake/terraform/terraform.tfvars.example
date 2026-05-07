@@ -1,0 +1,13 @@
+# Copy to terraform.tfvars and fill in your values.
+# Never commit terraform.tfvars to source control — add it to .gitignore.
+
+snowflake_org     = "MYORG"      # e.g. CLICKHOUSE
+snowflake_account = "MYACCOUNT" # e.g. ABC12345
+snowflake_user    = "TERRAFORM_SVC"
+
+# Choose one authentication method:
+snowflake_password = "your-password-here"
+# snowflake_private_key_path = "~/.ssh/snowflake_rsa_key.p8"
+
+environment = "lab"
+lab_cohort  = "fy27-q1"

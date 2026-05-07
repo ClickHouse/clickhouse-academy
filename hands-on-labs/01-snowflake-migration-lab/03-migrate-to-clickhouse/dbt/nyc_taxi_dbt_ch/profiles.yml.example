@@ -1,0 +1,27 @@
+# Required: pip install dbt-clickhouse>=1.7.0
+# The delete_insert incremental strategy and materialized_view materialization
+# require dbt-clickhouse 1.7.0 or later.
+nyc_taxi_ch:
+  target: dev
+  outputs:
+    dev:
+      type: clickhouse
+      # Migration note: Snowflake profile used account/warehouse/role/database.
+      # ClickHouse uses host/port/schema — no warehouse or role concepts.
+      # The schema here acts as both the database and default schema in ClickHouse.
+      schema: nyc_taxi_ch
+      host: "{{ env_var('CLICKHOUSE_HOST') }}"
+      port: 8443          # HTTPS native protocol port (ClickHouse Cloud default)
+      user: "{{ env_var('CLICKHOUSE_USER', 'default') }}"
+      password: "{{ env_var('CLICKHOUSE_PASSWORD') }}"
+      secure: true        # TLS required for ClickHouse Cloud
+      # verify: false     # uncomment if using self-signed cert in dev/local
+
+    prod:
+      type: clickhouse
+      schema: nyc_taxi_ch
+      host: "{{ env_var('CLICKHOUSE_HOST_PROD') }}"
+      port: 8443
+      user: "{{ env_var('CLICKHOUSE_USER_PROD', 'default') }}"
+      password: "{{ env_var('CLICKHOUSE_PASSWORD_PROD') }}"
+      secure: true

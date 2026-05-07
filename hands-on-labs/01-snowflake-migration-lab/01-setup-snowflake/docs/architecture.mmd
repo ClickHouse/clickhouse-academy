@@ -1,0 +1,28 @@
+%%{init: {"theme": "base", "themeVariables": {"fontSize": "16px"}}}%%
+flowchart LR
+    subgraph SRC ["  Data Sources  "]
+        direction TB
+        GEN["Synthetic Generator<br/>50 M rows · one-time seed"]
+        PRD["Trip Producer<br/>~60 trips / min · ongoing<br/>Docker container"]
+    end
+
+    subgraph SF ["  Snowflake — NYC_TAXI_DB  "]
+        direction TB
+        SF_NOTE["RAW · STAGING · ANALYTICS<br/>dbt-snowflake pipeline<br/>CDC stream · Scheduled tasks"]
+    end
+
+    subgraph BI ["  Apache Superset  "]
+        direction TB
+        BI_NOTE["3 Operational Dashboards<br/>localhost:8088"]
+    end
+
+    SRC -->|"INSERT"| SF
+    SF  -->|"SQL reads · ANALYTICS_WH"| BI
+
+    classDef srcNode  fill:#48C78E,color:#fff,stroke:#2ea06a,stroke-width:2px
+    classDef sfNode   fill:#29B5E8,color:#fff,stroke:#1a8bb8,stroke-width:2px
+    classDef biNode   fill:#00BCD4,color:#fff,stroke:#0097a7,stroke-width:2px
+
+    class GEN,PRD srcNode
+    class SF_NOTE sfNode
+    class BI_NOTE biNode

@@ -1,0 +1,66 @@
+version: 2
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Migration note: In Snowflake Part 1, sources pointed to NYC_TAXI_DB.RAW schema.
+# In ClickHouse, raw data is loaded via the Python migration script
+# (scripts/02_migrate_trips.py) and live writes from the post-cutover producer.
+# Both tables land in the default database/schema.
+# ──────────────────────────────────────────────────────────────────────────────
+
+sources:
+  - name: raw
+    database: default
+    schema: default
+    description: "Raw NYC Taxi data — loaded from Snowflake via Python migration script"
+    tables:
+      - name: trips_raw
+        description: >
+          All 50M trip records with a JSON string metadata column (trip_metadata).
+          Migration note: In Snowflake this was TRIPS_RAW with a VARIANT column.
+          In ClickHouse the column is stored as String and parsed with JSONExtract functions.
+        columns:
+          - name: trip_id
+            description: "UUID string — primary key for deduplication"
+            tests:
+              - not_null
+          - name: pickup_at
+            description: "Pickup timestamp — DateTime64(3,'UTC') in ClickHouse (was TIMESTAMP_NTZ in Snowflake)"
+            tests:
+              - not_null
+          - name: dropoff_at
+            description: "Dropoff timestamp"
+          - name: trip_metadata
+            description: >
+              JSON string containing nested driver, app, and route metadata.
+              Migration note: In Snowflake this was a VARIANT column accessed via
+              colon-path syntax (TRIP_METADATA:driver.rating::FLOAT).
+              In ClickHouse, use JSONExtractFloat(), JSONExtractString(), JSONExtractInt().
+          - name: _synced_at
+            description: >
+              ClickHouse-side ingestion timestamp — set automatically to now() on every INSERT
+              via DEFAULT now(). Used as the ReplacingMergeTree(_synced_at) version column.
+              If the migration script is interrupted and re-run with --resume, duplicate rows
+              for the same trip_id may briefly exist; the later INSERT has a higher _synced_at
+              and wins during deduplication. Post-cutover producer retries are also safe for
+              the same reason. stg_trips queries trips_raw FINAL to force dedup before
+              downstream models run.
+
+      - name: taxi_zones
+        description: >
+          NYC TLC taxi zone lookup — 265 zones across 5 boroughs.
+          Migration note: In Snowflake this was seeded into ANALYTICS.DIM_TAXI_ZONES.
+          In ClickHouse it is seeded once via scripts/00_seed_zones.sql as default.taxi_zones
+          before the first dbt run. Named taxi_zones (not dim_taxi_zones) to avoid naming
+          collision with the analytics.dim_taxi_zones dbt model. It is static reference data
+          and does not change.
+        columns:
+          - name: location_id
+            description: "TLC location ID (1–265)"
+            tests:
+              - not_null
+          - name: borough
+            description: "NYC borough name"
+          - name: zone
+            description: "Named zone within borough"
+          - name: service_zone
+            description: "TLC service zone (Yellow Zone, Boro Zone, EWR)"

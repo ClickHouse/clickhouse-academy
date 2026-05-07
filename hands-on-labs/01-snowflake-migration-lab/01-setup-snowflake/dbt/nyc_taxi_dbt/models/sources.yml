@@ -1,0 +1,23 @@
+version: 2
+
+sources:
+  - name: raw
+    database: NYC_TAXI_DB
+    schema: RAW
+    description: "Raw ingested NYC Taxi data — immutable source of truth"
+    tables:
+      - name: TRIPS_RAW
+        description: "All 50M trip records as received from TLC with synthetic JSON metadata"
+        columns:
+          - name: TRIP_ID
+            description: "UUID generated on ingest"
+            tests:
+              - not_null
+          - name: PICKUP_DATETIME
+            tests:
+              - not_null
+          - name: TOTAL_AMOUNT
+            tests:
+              - not_null
+          - name: TRIP_METADATA
+            description: "VARIANT: driver rating, app version, surge info"

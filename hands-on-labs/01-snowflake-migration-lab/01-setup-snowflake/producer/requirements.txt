@@ -1,0 +1,2 @@
+snowflake-connector-python==3.7.0
+cryptography>=41.0.0   # for key-pair auth support

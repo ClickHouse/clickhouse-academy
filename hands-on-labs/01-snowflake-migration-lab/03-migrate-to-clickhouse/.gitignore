@@ -1,0 +1,8 @@
+.env
+.clickhouse_state
+terraform/terraform.tfvars
+terraform/.terraform/
+terraform/tfplan
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+docs/part2-design-module-plan.md

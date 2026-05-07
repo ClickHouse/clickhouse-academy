@@ -1,0 +1,60 @@
+name: 'nyc_taxi_dbt_ch'
+version: '1.0.0'
+config-version: 2
+
+profile: 'nyc_taxi_ch'
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Migration note: Snowflake Part 1 used uppercase schema names (STAGING, ANALYTICS).
+# ClickHouse schemas are lowercase — all schema references use | lower filter.
+# ──────────────────────────────────────────────────────────────────────────────
+
+models:
+  nyc_taxi_dbt_ch:
+    staging:
+      +schema: staging
+      +materialized: view
+      # Note: no +engine here — views have no engine in ClickHouse.
+      # If you change a staging model to +materialized: table, add
+      # engine: "MergeTree()" and order_by directly in the model's config block.
+
+    intermediate:
+      +schema: staging
+      +materialized: ephemeral
+      # ephemeral = CTEs inlined into downstream queries — same behavior as Snowflake Part 1
+
+    marts:
+      +schema: analytics
+      +materialized: table
+      +engine: "MergeTree()"
+      # Migration note: Snowflake used cluster_by for physical partitioning.
+      # ClickHouse uses order_by — the primary key index IS the physical sort order.
+
+      fact_trips:
+        +materialized: incremental
+        # Migration note: Snowflake used incremental_strategy='merge' (MERGE INTO).
+        # ClickHouse has no MERGE INTO — ReplacingMergeTree handles deduplication
+        # via background merges. The version column (updated_at) determines which row wins.
+        # delete_insert is the correct dbt-clickhouse strategy for ReplacingMergeTree.
+        +engine: "ReplacingMergeTree(updated_at)"
+        +incremental_strategy: delete_insert
+        +unique_key: trip_id
+
+      agg_hourly_zone_trips:
+        +materialized: incremental
+        +engine: "ReplacingMergeTree(updated_at)"
+        +incremental_strategy: delete_insert
+        +unique_key: [hour_bucket, zone_id]
+
+    materialized_views:
+      +schema: analytics
+      +materialized: materialized_view
+      # Migration note: Snowflake has no native materialized views with auto-refresh.
+      # ClickHouse Materialized Views update on every INSERT — zero maintenance required.

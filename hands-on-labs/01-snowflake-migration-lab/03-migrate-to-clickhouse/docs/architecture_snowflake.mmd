@@ -1,0 +1,41 @@
+%%{init: {"theme": "base", "themeVariables": {"fontSize": "14px"}}}%%
+flowchart TB
+    PRD["Trip Producer<br/>~60 trips / min · Docker<br/>pre-cutover"]
+
+    subgraph SF ["  Snowflake — NYC_TAXI_DB (Part 1 source)  "]
+        direction TB
+
+        subgraph RAW_SCHEMA ["RAW Schema"]
+            direction LR
+            TRIPS_RAW[["TRIPS_RAW<br/>50 M rows<br/>VARIANT: TRIP_METADATA"]]
+        end
+
+        DBT_SF(["dbt-snowflake<br/>staging → analytics<br/>MERGE incremental"])
+
+        subgraph ANALYTICS_SCHEMA ["ANALYTICS Schema"]
+            direction LR
+            FACT_SF[["FACT_TRIPS<br/>50 M rows<br/>MERGE on trip_id"]]
+            AGG_SF[["AGG_HOURLY_ZONE_TRIPS<br/>~2 M rows"]]
+        end
+    end
+
+    subgraph MIGRATE ["  Python Migration (one-time)  "]
+        direction TB
+        PY_MIGRATE(["scripts/02_migrate_trips.py<br/>100K-row batches<br/>~40-50 min"])
+    end
+
+    PRD        -->|"INSERT ~60 rows/min"| TRIPS_RAW
+    TRIPS_RAW  -->|"dbt source"| DBT_SF
+    DBT_SF     -->|"MERGE incremental"| FACT_SF
+    DBT_SF     -->|"MERGE aggregate"| AGG_SF
+    TRIPS_RAW  -->|"one-time full migration"| PY_MIGRATE
+
+    classDef source   fill:#48C78E,color:#fff,stroke:#2ea06a,stroke-width:2px
+    classDef sfTable  fill:#29B5E8,color:#fff,stroke:#1a8bb8,stroke-width:2px
+    classDef dbt      fill:#FF8C00,color:#fff,stroke:#cc6600,stroke-width:2px
+    classDef migrate  fill:#48C78E,color:#fff,stroke:#2ea06a,stroke-width:2px
+
+    class PRD source
+    class TRIPS_RAW,FACT_SF,AGG_SF sfTable
+    class DBT_SF dbt
+    class PY_MIGRATE migrate

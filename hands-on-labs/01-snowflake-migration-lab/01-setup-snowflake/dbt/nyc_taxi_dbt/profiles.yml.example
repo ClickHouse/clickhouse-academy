@@ -1,0 +1,29 @@
+# Copy to ~/.dbt/profiles.yml or set DBT_PROFILES_DIR=.
+# NEVER commit with real credentials.
+nyc_taxi:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ORG') }}-{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      # OR use key-pair:
+      # private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
+      role: DBT_ROLE
+      database: NYC_TAXI_DB
+      warehouse: TRANSFORM_WH
+      schema: STAGING
+      threads: 4
+      client_session_keep_alive: false
+    prod:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
+      role: DBT_ROLE
+      database: NYC_TAXI_DB
+      warehouse: TRANSFORM_WH
+      schema: STAGING
+      threads: 8
+      client_session_keep_alive: false

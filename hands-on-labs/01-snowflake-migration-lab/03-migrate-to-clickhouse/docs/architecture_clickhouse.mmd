@@ -1,0 +1,65 @@
+%%{init: {"theme": "base", "themeVariables": {"fontSize": "14px"}}}%%
+flowchart TB
+    PY_IN["Python Migration Script<br/>scripts/02_migrate_trips.py<br/>(one-time bulk load · ~40-50 min)"]
+    PRD_CH["Trip Producer<br/>post-cutover · Docker"]
+
+    subgraph CH ["  ClickHouse Cloud  "]
+        direction TB
+
+        subgraph CH_DEFAULT ["default database"]
+            TRIPS_RAW_CH[["trips_raw<br/>ReplacingMergeTree(_synced_at)<br/>ORDER BY (pickup_at, trip_id)"]]
+            TAXI_ZONES_SEED[["taxi_zones<br/>MergeTree · 265 rows<br/>seeded by scripts/00_seed_zones.sql"]]
+        end
+
+        subgraph CH_STAGING ["staging database · dbt views"]
+            direction LR
+            STG_TRIPS["stg_trips<br/>View · JSONExtract*<br/>type-casts + null filters"]
+            STG_ZONES["stg_taxi_zones<br/>View · COALESCE nulls"]
+            INT_TRIPS["int_trips_enriched<br/>Ephemeral CTE<br/>all dimension joins"]
+        end
+
+        subgraph CH_ANALYTICS ["analytics database"]
+            direction TB
+            FACT_CH[["fact_trips<br/>ReplacingMergeTree(updated_at)<br/>ORDER BY (toStartOfMonth(pickup_at), pickup_at, trip_id)"]]
+            AGG_CH[["agg_hourly_zone_trips<br/>ReplacingMergeTree(updated_at)<br/>ORDER BY (hour_bucket, zone_id)"]]
+            DIMS_CH[["dim_taxi_zones · dim_payment_type · dim_vendor<br/>MergeTree · full reload per dbt run"]]
+            DICT_CH[["taxi_zones_dict<br/>Dictionary · HASHED layout<br/>in-memory zone lookups via dictGet()"]]
+            MV_CH(["mv_hourly_revenue<br/>Refreshable Materialized View<br/>REFRESH EVERY 180 SECOND"])
+        end
+    end
+
+    subgraph BI ["  Apache Superset  "]
+        direction LR
+        SF_DASH["3 Snowflake Dashboards<br/>(from Part 1)"]
+        CH_DASH["4 ClickHouse Dashboards<br/>Operations · Executive<br/>Driver Quality · Capabilities Showcase"]
+    end
+
+    PY_IN        -->|"batch INSERT (100K rows)"| TRIPS_RAW_CH
+    PRD_CH       -.->|"post-cutover INSERT"| TRIPS_RAW_CH
+    TRIPS_RAW_CH     -->|"dbt source"| STG_TRIPS
+    TAXI_ZONES_SEED  -->|"dbt source"| STG_ZONES
+    STG_TRIPS    --> INT_TRIPS
+    STG_ZONES    --> INT_TRIPS
+    INT_TRIPS    -->|"delete_insert"| FACT_CH
+    STG_TRIPS    -->|"delete_insert"| AGG_CH
+    STG_ZONES    -->|"full refresh"| DIMS_CH
+    DIMS_CH      -->|"backs"| DICT_CH
+    FACT_CH      -->|"scheduled refresh"| MV_CH
+    FACT_CH      --> CH_DASH
+    AGG_CH       --> CH_DASH
+    MV_CH        --> CH_DASH
+    DICT_CH      --> CH_DASH
+
+    classDef source   fill:#48C78E,color:#fff,stroke:#2ea06a,stroke-width:2px
+    classDef srcDash  fill:#48C78E,color:#fff,stroke:#2ea06a,stroke-width:2px,stroke-dasharray:5 3
+    classDef chTable  fill:#E03C3C,color:#fff,stroke:#b52d2d,stroke-width:2px
+    classDef chMV     fill:#E03C3C,color:#fff,stroke:#b52d2d,stroke-width:2px,stroke-dasharray:4 2
+    classDef dbt      fill:#FF8C00,color:#fff,stroke:#cc6600,stroke-width:2px
+    classDef biDash   fill:#00BCD4,color:#fff,stroke:#0097a7,stroke-width:2px
+
+    class PY_IN source
+    class PRD_CH srcDash
+    class TRIPS_RAW_CH,TAXI_ZONES_SEED,FACT_CH,AGG_CH,DIMS_CH,DICT_CH chTable
+    class MV_CH chMV
+    class STG_TRIPS,STG_ZONES,INT_TRIPS dbt
+    class SF_DASH,CH_DASH biDash
