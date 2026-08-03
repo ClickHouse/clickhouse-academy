@@ -78,7 +78,7 @@ SELECT
    avg(score) AS avg_score
 FROM posts_by_month
 WHERE toYYYYMM(creation_date) = 202401;
--- Only 104,922 rows were scanned. You should notice that only January’s partition was scanned.
+-- About 104,000 rows were scanned. You should notice that only January’s partition was scanned.
 
 -- Step 8
 SELECT 
