@@ -24,6 +24,27 @@ INSERT INTO uk_prices_2
     SELECT * 
     FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/uk_property_prices/uk_prices.csv.zst');
 
+-- If you are using the Clickhouse OSS, run this query instead
+INSERT INTO uk_prices_2
+SELECT
+    c1 as id,                 
+    c2 as price,        
+    parseDateTimeBestEffortOrNull(c3) AS date,
+    c4 as postcode,     
+    c5 as type,         
+    c6 as is_new,      
+    c7 as duration,    
+    c8 as addr1,
+    c9 as addr2,
+    c10 as street,
+    c11 as locality,
+    c12 as town,
+    c13 as district,
+    c14 as county,
+    c15 as column15,
+    c16 as column16
+FROM s3('https://learn-clickhouse.s3.us-east-2.amazonaws.com/uk_property_prices/uk_prices.csv.zst');
+
 CREATE TABLE uk_prices_3
 (
     id UUID,
