@@ -191,11 +191,9 @@ INSERT INTO nyc_taxi_key_5 SELECT * FROM nyc_taxi;
 
 
 
--- Replace lookup table with dictionary
+-- Add a dictionary alongside the lookup table
 
-RENAME TABLE taxi_zone_lookup TO taxi_zone_lookup_table;
-
-CREATE OR REPLACE DICTIONARY taxi_zone_lookup
+CREATE OR REPLACE DICTIONARY taxi_zone_lookup_dict
 (
     `id` UInt64,
     `borough` String,
