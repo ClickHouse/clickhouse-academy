@@ -2,7 +2,7 @@
 
 The ClickHouse Academy contains free, on-demand learning for database experts who need to understand and use ClickHouse effectively.
 
-The course catalog is available here: https://learn.clickhouse.com/visitor_class_catalog/
+The learning paths are available here: https://learn.clickhouse.com/page/learning-paths
 
 We mostly use this repository for lab solutions. Using GitHub allows us to easily share and update these solutions, including the ability for anyone to create a pull request to contribute fixes and changes.
 
